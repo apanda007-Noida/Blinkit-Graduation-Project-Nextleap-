@@ -52,7 +52,7 @@ export async function POST(req: Request) {
     const userMessage = messages[messages.length - 1].content;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-1.5-flash',
       contents: [
         ...formattedHistory,
         { role: 'user', parts: [{ text: userMessage }] }
@@ -71,7 +71,7 @@ export async function POST(req: Request) {
     console.error("Chat API Error:", error);
     return NextResponse.json({ 
       role: "assistant", 
-      content: "Sorry, I'm having trouble connecting right now." 
+      content: `Sorry, I hit an error: ${error.message || "Unknown error"}` 
     }, { status: 500 });
   }
 }
