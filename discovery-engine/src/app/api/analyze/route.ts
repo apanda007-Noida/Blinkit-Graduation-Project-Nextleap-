@@ -101,6 +101,14 @@ CRITICAL INSTRUCTION: You MUST return ONLY a raw, valid JSON object and absolute
     
   } catch (error: any) {
     console.error("Analyze API Error:", error);
-    return NextResponse.json({ error: `Analysis Failed: ${error.message}` }, { status: 500 });
+    
+    try {
+      const modelsRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`);
+      const modelsData = await modelsRes.json();
+      const supportedModels = modelsData.models ? modelsData.models.map((m: any) => m.name).join(", ") : "None found";
+      return NextResponse.json({ error: `Analysis Failed: ${error.message} --- SUPPORTED MODELS FOR YOUR KEY: ${supportedModels}` }, { status: 500 });
+    } catch(e) {
+      return NextResponse.json({ error: `Analysis Failed: ${error.message}` }, { status: 500 });
+    }
   }
 }
