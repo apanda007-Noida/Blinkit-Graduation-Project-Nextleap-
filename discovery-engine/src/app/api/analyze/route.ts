@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenAI, Type } from '@google/genai';
+import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 
 const RESEARCH_QUESTIONS = [
   "Why do users repeatedly buy from the same categories?",
@@ -13,7 +13,7 @@ const RESEARCH_QUESTIONS = [
 ];
 
 const systemInstruction = `You are a growth-analytics engine for a Product Manager researching why quick-commerce users (Blinkit) don't buy from new categories.
-You will be given raw, unstructured user feedback from three sources: app/play store reviews, reddit/forum threads, and social posts.
+You will be given raw, unstructured user feedback from several sources.
 Your job:
 1. Identify 4-7 recurring THEMES that explain repeat-category shopping behavior and barriers to category exploration. Ground every theme only in patterns actually present in the provided text.
 2. Direct answers to each of the 8 research questions based only on the evidence.
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No input provided." }, { status: 400 });
     }
 
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     
     const userContent = `
 APP STORE REVIEWS:\n${appStore || '(none provided)'}
@@ -54,44 +54,43 @@ PRODUCT REVIEWS:\n${productReviews || '(none provided)'}
 QUICK-COMMERCE DISCUSSIONS:\n${quickCommerce || '(none provided)'}
 `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-pro',
-      contents: userContent,
-      config: {
-        systemInstruction: systemInstruction,
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      systemInstruction: systemInstruction,
+      generationConfig: {
         responseMimeType: "application/json",
         responseSchema: {
-          type: Type.OBJECT,
+          type: SchemaType.OBJECT,
           properties: {
             themes: {
-              type: Type.ARRAY,
+              type: SchemaType.ARRAY,
               items: {
-                type: Type.OBJECT,
+                type: SchemaType.OBJECT,
                 properties: {
-                  title: { type: Type.STRING },
-                  insight: { type: Type.STRING },
-                  confidence: { type: Type.STRING, enum: ["high", "medium", "low"] },
-                  paraphrased_example: { type: Type.STRING },
-                  related_questions: { type: Type.ARRAY, items: { type: Type.INTEGER } },
-                  segment: { type: Type.STRING }
+                  title: { type: SchemaType.STRING },
+                  insight: { type: SchemaType.STRING },
+                  confidence: { type: SchemaType.STRING },
+                  paraphrased_example: { type: SchemaType.STRING },
+                  related_questions: { type: SchemaType.ARRAY, items: { type: SchemaType.INTEGER } },
+                  segment: { type: SchemaType.STRING }
                 },
                 required: ["title", "insight", "confidence", "paraphrased_example", "related_questions", "segment"]
               }
             },
             answers: {
-              type: Type.ARRAY,
+              type: SchemaType.ARRAY,
               items: {
-                type: Type.OBJECT,
+                type: SchemaType.OBJECT,
                 properties: {
-                  question: { type: Type.STRING },
-                  answer: { type: Type.STRING }
+                  question: { type: SchemaType.STRING },
+                  answer: { type: SchemaType.STRING }
                 },
                 required: ["question", "answer"]
               }
             },
             validation_flags: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING }
+              type: SchemaType.ARRAY,
+              items: { type: SchemaType.STRING }
             }
           },
           required: ["themes", "answers", "validation_flags"]
@@ -99,10 +98,12 @@ QUICK-COMMERCE DISCUSSIONS:\n${quickCommerce || '(none provided)'}
       }
     });
 
-    if (!response.text) throw new Error("No response generated.");
+    const result = await model.generateContent(userContent);
+    const text = result.response.text();
     
-    // Parse the structured JSON response
-    const data = JSON.parse(response.text);
+    if (!text) throw new Error("No response generated.");
+    
+    const data = JSON.parse(text);
     return NextResponse.json(data);
     
   } catch (error: any) {
