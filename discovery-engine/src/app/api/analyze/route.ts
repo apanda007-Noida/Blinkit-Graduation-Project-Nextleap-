@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     const userContent = `APP/PLAY STORE REVIEWS:\n${reviews || '(none provided)'}\n\nREDDIT/FORUM:\n${reddit || '(none provided)'}\n\nSOCIAL/OTHER:\n${social || '(none provided)'}`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-pro',
+      model: 'gemini-pro',
       contents: userContent,
       config: {
         systemInstruction: systemInstruction,
