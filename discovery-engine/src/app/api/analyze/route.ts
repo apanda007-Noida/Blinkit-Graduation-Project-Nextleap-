@@ -45,6 +45,17 @@ export async function POST(req: Request) {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     
     const userContent = `
+You are a growth-analytics engine for a Product Manager researching why quick-commerce users (Blinkit) don't buy from new categories.
+You will be given raw, unstructured user feedback from several sources.
+Your job:
+1. Identify 4-7 recurring THEMES that explain repeat-category shopping behavior and barriers to category exploration. Ground every theme only in patterns actually present in the provided text.
+2. Direct answers to each of the 8 research questions based only on the evidence.
+3. List 3-5 validation_flags to check in follow-up 1:1 user interviews.
+
+The 8 research questions, in order, are:
+${RESEARCH_QUESTIONS.map((q,i)=>`${i+1}. ${q}`).join('\n')}
+
+RAW FEEDBACK:
 APP STORE REVIEWS:\n${appStore || '(none provided)'}
 PLAY STORE REVIEWS:\n${playStore || '(none provided)'}
 REDDIT DISCUSSIONS:\n${reddit || '(none provided)'}
@@ -52,56 +63,38 @@ COMMUNITY FORUMS:\n${communityForums || '(none provided)'}
 SOCIAL MEDIA CONVERSATIONS:\n${socialMedia || '(none provided)'}
 PRODUCT REVIEWS:\n${productReviews || '(none provided)'}
 QUICK-COMMERCE DISCUSSIONS:\n${quickCommerce || '(none provided)'}
+
+CRITICAL INSTRUCTION: You MUST return ONLY a raw, valid JSON object and absolutely nothing else. Do not include markdown code blocks like \`\`\`json. The JSON must exactly match this structure:
+{
+  "themes": [
+    {
+      "title": "String",
+      "insight": "String",
+      "confidence": "high, medium, or low",
+      "paraphrased_example": "String",
+      "related_questions": [1, 2],
+      "segment": "String"
+    }
+  ],
+  "answers": [
+    {
+      "question": "String",
+      "answer": "String"
+    }
+  ],
+  "validation_flags": ["String", "String"]
+}
 `;
 
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
-      systemInstruction: systemInstruction,
-      generationConfig: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: SchemaType.OBJECT,
-          properties: {
-            themes: {
-              type: SchemaType.ARRAY,
-              items: {
-                type: SchemaType.OBJECT,
-                properties: {
-                  title: { type: SchemaType.STRING },
-                  insight: { type: SchemaType.STRING },
-                  confidence: { type: SchemaType.STRING },
-                  paraphrased_example: { type: SchemaType.STRING },
-                  related_questions: { type: SchemaType.ARRAY, items: { type: SchemaType.INTEGER } },
-                  segment: { type: SchemaType.STRING }
-                },
-                required: ["title", "insight", "confidence", "paraphrased_example", "related_questions", "segment"]
-              }
-            },
-            answers: {
-              type: SchemaType.ARRAY,
-              items: {
-                type: SchemaType.OBJECT,
-                properties: {
-                  question: { type: SchemaType.STRING },
-                  answer: { type: SchemaType.STRING }
-                },
-                required: ["question", "answer"]
-              }
-            },
-            validation_flags: {
-              type: SchemaType.ARRAY,
-              items: { type: SchemaType.STRING }
-            }
-          },
-          required: ["themes", "answers", "validation_flags"]
-        }
-      }
-    });
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
     const result = await model.generateContent(userContent);
-    const text = result.response.text();
+    let text = result.response.text();
     
     if (!text) throw new Error("No response generated.");
+    
+    // Strip markdown formatting if the model accidentally included it
+    text = text.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
     
     const data = JSON.parse(text);
     return NextResponse.json(data);
