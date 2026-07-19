@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Chatbot from "../components/Chatbot";
 
 export default function Home() {
   const [products, setProducts] = useState<any[]>([]);
@@ -107,6 +108,8 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      <Chatbot />
     </div>
   );
 }
