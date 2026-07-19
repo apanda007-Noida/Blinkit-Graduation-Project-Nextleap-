@@ -5,7 +5,7 @@ import { useState } from "react";
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([
-    { role: "assistant", content: "Hi! I'm your Blinkit Trust Assistant. Have any questions about our products or authenticity guarantees?" }
+    { role: "assistant", content: "Hello! I am the PM Case Study Assistant. Ask me about Blinkit user behavior, discovery frictions, or unmet needs." }
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -48,7 +48,7 @@ export default function Chatbot() {
       {isOpen && (
         <div className="chat-window">
           <div className="chat-header">
-            Blinkit Trust Assistant
+            PM Research Assistant
           </div>
           
           <div className="chat-messages">
@@ -71,7 +71,7 @@ export default function Chatbot() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-              placeholder="Ask about authenticity..."
+              placeholder="E.g. What prevents users from exploring new categories?"
               disabled={isLoading}
             />
             <button className="chat-send-btn" onClick={sendMessage} disabled={isLoading}>
