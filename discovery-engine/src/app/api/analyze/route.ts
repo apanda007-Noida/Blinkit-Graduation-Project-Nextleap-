@@ -24,19 +24,35 @@ ${RESEARCH_QUESTIONS.map((q,i)=>`${i+1}. ${q}`).join('\n')}`;
 
 export async function POST(req: Request) {
   try {
-    const { reviews, reddit, social } = await req.json();
+    const { 
+      appStore, 
+      playStore, 
+      reddit, 
+      communityForums, 
+      socialMedia, 
+      productReviews, 
+      quickCommerce 
+    } = await req.json();
     
     if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json({ error: "GEMINI_API_KEY is not configured." }, { status: 500 });
     }
 
-    if (!reviews && !reddit && !social) {
+    if (!appStore && !playStore && !reddit && !communityForums && !socialMedia && !productReviews && !quickCommerce) {
       return NextResponse.json({ error: "No input provided." }, { status: 400 });
     }
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     
-    const userContent = `APP/PLAY STORE REVIEWS:\n${reviews || '(none provided)'}\n\nREDDIT/FORUM:\n${reddit || '(none provided)'}\n\nSOCIAL/OTHER:\n${social || '(none provided)'}`;
+    const userContent = `
+APP STORE REVIEWS:\n${appStore || '(none provided)'}
+PLAY STORE REVIEWS:\n${playStore || '(none provided)'}
+REDDIT DISCUSSIONS:\n${reddit || '(none provided)'}
+COMMUNITY FORUMS:\n${communityForums || '(none provided)'}
+SOCIAL MEDIA CONVERSATIONS:\n${socialMedia || '(none provided)'}
+PRODUCT REVIEWS:\n${productReviews || '(none provided)'}
+QUICK-COMMERCE DISCUSSIONS:\n${quickCommerce || '(none provided)'}
+`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-pro',
