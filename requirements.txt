@@ -3,3 +3,4 @@ app-store-scraper
 praw
 pandas
 google-genai
+tabulate
