@@ -1,0 +1,67 @@
+[
+    {
+        "id": "play_6289f61a-6903-422e-abd5-caa301ce8e51",
+        "source": "play_store",
+        "app_name": "blinkit",
+        "date": "2026-07-11 09:49:42",
+        "raw_text": "The pricing on Blinkit feels inconsistent. The same product can have one price in the morning, a different price in the evening, and another price the next day, which makes the pricing seem unpredictable. I have also noticed that sometimes a packing fee is charged, but the items are delivered without any bag and are simply handed over. Another issue is with product availability. If I order from a new phone number, I can see and purchase several 1 kg rice packs. However, when I order from my",
+        "category_mentioned": ["grocery"],
+        "sentiment": "negative",
+        "trigger_type": "none",
+        "friction_type": ["price-sensitivity", "trust-quality"],
+        "segment_signal": "deal-driven",
+        "evidence_quote": "pricing on Blinkit feels inconsistent... packing fee is charged, but the items are delivered without any bag"
+    },
+    {
+        "id": "play_7410de40-13bd-483b-8e29-eab59b4d5c1c",
+        "source": "play_store",
+        "app_name": "blinkit",
+        "date": "2026-07-10 13:47:04",
+        "raw_text": "Always charging Surcharge amount on top of handling fee, even after adding items worth more than 1000/- in kart. That too not in any rush hour or bad weather, in a well connected metro city. Just another app for robbing people in the name of little convenience. Also, they have even the basic essentials always 'out of stock'. Hope it shuts down soon.",
+        "category_mentioned": ["none"],
+        "sentiment": "negative",
+        "trigger_type": "none",
+        "friction_type": ["price-sensitivity", "trust-quality"],
+        "segment_signal": "deal-driven",
+        "evidence_quote": "charging Surcharge amount on top of handling fee... basic essentials always 'out of stock'"
+    },
+    {
+        "id": "play_878c1c2b-7b20-4f09-ba5a-73fb33c71161",
+        "source": "play_store",
+        "app_name": "blinkit",
+        "date": "2026-07-14 09:09:21",
+        "raw_text": "I had a very bad experience with this app. I ordered 4 items, but only 3 were delivered. When I contacted customer support to report the missing item, they simply claimed that all 4 items had been delivered and did not take any action to investigate or resolve the issue. This was extremely disappointing. I paid for 4 items but received only 3, and the support team refused to help. Based on my experience, I cannot recommend this app for quick deliveries. I expected better customer service.",
+        "category_mentioned": ["none"],
+        "sentiment": "negative",
+        "trigger_type": "none",
+        "friction_type": ["trust-quality"],
+        "segment_signal": "unclear",
+        "evidence_quote": "ordered 4 items, but only 3 were delivered... support team refused to help"
+    },
+    {
+        "id": "play_7264f7a4-a960-44cc-9114-5f603070198a",
+        "source": "play_store",
+        "app_name": "blinkit",
+        "date": "2026-07-14 09:00:28",
+        "raw_text": "⭐⭐⭐⭐⭐ Blinkit has made grocery shopping incredibly convenient. The app is easy to use, deliveries are usually very fast, and the products are fresh and well-packed. I appreciate the wide range of items available and the reliable service. It saves me a lot of time, especially during busy days. Overall, a great app for quick and hassle-free shopping.",
+        "category_mentioned": ["grocery"],
+        "sentiment": "positive",
+        "trigger_type": "habit",
+        "friction_type": ["none"],
+        "segment_signal": "loyalist-repeat-only",
+        "evidence_quote": "grocery shopping incredibly convenient... wide range of items available and the reliable service"
+    },
+    {
+        "id": "play_08683303-220e-4b70-b7ea-2a83ee03b256",
+        "source": "play_store",
+        "app_name": "blinkit",
+        "date": "2026-07-14 14:48:36",
+        "raw_text": "I'm happy with Blinkit overall. The customer care service is very good and helpful. However, I've noticed that some products like milk and almonds don't always have a clearly visible expiry date. Also, milk has curdled several times after delivery. The return process works, but it takes time and causes inconvenience. Please ensure that expiry dates are clearly visible and that perishable items are checked properly before delivery. This would make the overall experience much better.",
+        "category_mentioned": ["grocery"],
+        "sentiment": "neutral",
+        "trigger_type": "none",
+        "friction_type": ["trust-quality"],
+        "segment_signal": "cautious-explorer",
+        "evidence_quote": "milk and almonds don't always have a clearly visible expiry date... milk has curdled several times"
+    }
+]

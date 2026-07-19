@@ -1,0 +1,5 @@
+google-play-scraper
+app-store-scraper
+praw
+pandas
+google-genai

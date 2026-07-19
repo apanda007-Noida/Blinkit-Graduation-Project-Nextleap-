@@ -1,0 +1,94 @@
+1. Problem Statement
+Blinkit wants to increase the % of Monthly Active Customers who purchase from at least one new category per month. Before proposing any product solution, we need evidence-backed answers to why users repeat-buy from the same categories and what stops them from exploring new ones.
+Today, this evidence is scattered across App Store reviews, Play Store reviews, Reddit threads, forums, and social conversations — unstructured, high-volume, and impossible to synthesize manually at a scale that would hold up in a PM case study.
+We need a tool that ingests this scattered feedback, tags it against a consistent behavioural schema, and produces both structured data and a synthesized narrative of category-discovery behaviour — fast enough to inform a PRD, not just decorate one.
+2. Goal
+Build a pipeline (not a product) that takes raw public feedback about Blinkit/quick-commerce shopping behavior and outputs:
+1.	A structured, tagged dataset (2600+ items) — queryable and aggregable
+2.	A written synthesis report answering the 8 core research questions
+3.	A 1-slide explainer of how the engine works (separate deliverable, uses this PRD's outputs)
+This engine is infrastructure for the case study — its own "users" are just you (the PM) and, secondarily, anyone reviewing the case study who wants to see the workflow.
+3. Non-Goals (Out of Scope for v1)
+•	No real-time/continuously-updating pipeline — this is a single batch run against a fixed sample
+•	No user-facing UI beyond a simple dashboard/table view of tagged data
+•	No fine-tuning of models — use prompting + structured output only
+•	No sentiment analysis beyond what's needed to answer the 8 research questions
+•	Not a general-purpose review-analysis SaaS product — purpose-built for this one research task
+4. Core Research Questions the Engine Must Answer
+1.	Why do users repeatedly buy from the same categories? → trigger_type, friction_type
+2.	What prevents users from exploring new categories? → friction_type, evidence_quote
+3.	How do users discover products today? → trigger_type (algorithmic-discovery, social-recommendation, accidental)
+4.	What role do habits play in shopping behavior? → trigger_type (habit), segment_signal (loyalist-repeat-only)
+5.	What information do users need before trying a new category? → friction_type (category-unfamiliarity, trust-quality), evidence_quote
+6.	What frustrations emerge repeatedly? → sentiment, friction_type
+7.	Which user segments are more likely to experiment? → segment_signal (active-explorer, cautious-explorer)
+8.	What unmet needs emerge consistently across discussions? → synthesis-level pattern across friction_type + evidence_quote, not a single field
+Each question maps to specific schema fields — if the pilot tagging pass (Milestone 1) shows a question isn't well-covered by the current fields, the schema gets revised before scaling to the full 2600+ run.
+5. Data Sources & Acquisition
+All seven source types below are in scope for v1. Every collection method here is free — no paid API tiers (e.g. no Twitter/X API, which now requires a paid plan). Where a source has no free API, we fall back to manual curation from public pages.
+#	Source	Method (free only)	Target volume
+1	App Store reviews (Blinkit)	app-store-scraper (Python, free/open-source, no auth needed)	~1200-1500
+2	Play Store reviews (Blinkit)	google-play-scraper (Python, free/open-source, no auth needed)	~1200-1500
+3	Reddit discussions	Reddit API via PRAW — free tier (rate-limited but sufficient for this volume)	~90-110
+4	Community forums	Manual curation from public forum pages (e.g. MouthShut, consumer-complaint boards, India-focused shopping forums) — no scraping tool needed, just public browsing	~25-35
+5	Social media conversations	Manual curation via public search on X/Twitter, Instagram, Facebook groups (public posts only, no login-gated content) — no paid API used, since X's API now requires payment	~50-100 (light supplement — see rationale below)
+6	Product reviews (category-level, e.g. Amazon/Flipkart reviews for categories users hesitate to try on quick-commerce)	Manual curation from public review pages (free to browse; avoid automated scraping that violates ToS)	~10-15 (light supplement — see rationale below)
+7	Quick-commerce discussions (comparative — Zepto, Instamart, BigBasket, etc.)	Free sources only: app-store-scraper/google-play-scraper for comparable apps, Reddit API, and manual forum/social curation	~30-40
+Target: 2600+ items total, rebalanced toward Reddit and app/store reviews rather than spread evenly. Rationale: the 8 research questions need narrative reasoning (why someone does/doesn't try a category), which Reddit and forum discussions surface directly and which the free Reddit API can collect at volume. Social media and product reviews are treated as light supplements rather than equal pillars — under the free-only constraint they require manual curation, and the text they surface is more fragmentary and less directly tied to the research questions, giving a weaker insight-per-hour return. If full breadth across all seven channels is itself a requirement for this case study (e.g. an evaluation criterion), these two rows can be scaled back up — flagged as an open question in Section 11.
+Note on "free": app-store-scraper, google-play-scraper, and PRAW are all free, open-source tools with no cost to run. Manual curation (Sources 4, 5, 6) costs time, not money — budget for this in the ingestion milestone.
+Sourcing protocol for manual curation (Sources 4, 5, 6): To reduce the risk of unconsciously cherry-picking posts that confirm expected findings, manual curation follows a fixed protocol rather than open-ended browsing:
+1.	Fixed keyword list, defined before curation starts (e.g. "blinkit new category", "blinkit trust quality", "quick commerce won't buy", "blinkit vs amazon", "tried blinkit for the first time") — not expanded mid-search based on what looks promising.
+2.	Fixed date range (e.g. last 18-24 months) applied uniformly across all three sources.
+3.	Fixed pull count per keyword (e.g. first 5-8 relevant results per keyword, in the order the platform returns them — not hand-picked for how well they fit the hypothesis).
+4.	Log the search queries used alongside the dataset, so the sourcing method itself is auditable and reproducible by someone else reviewing the case study.
+5.	Include contradicting/neutral posts, not just posts confirming friction/habit narratives — if a keyword search returns a "I love trying new categories on Blinkit" post, it goes in the dataset too.
+PII Note
+Evidence quotes may include usernames or personally identifying details from public posts. Strip or generalize usernames in the evidence_quote field before it appears in the synthesis report or 1-slide explainer.
+Constraint to design around: review platforms and Reddit have rate limits and ToS constraints — pipeline should batch requests, cache raw pulls locally, and be resumable (don't lose progress on a failed run).
+6. Extraction Schema (v1)
+Every ingested item gets tagged with:
+Field	Type	Values / Notes
+id	string	unique per item
+source	enum	play_store / app_store / reddit / forum / social
+app_name	enum	blinkit / zepto / instamart / bigbasket / other — required so Blinkit-specific data (Sources 1-6) is never conflated with comparative data (Source 7) during aggregation
+date	date	if available
+raw_text	string	cleaned original text
+category_mentioned	string/list	e.g. grocery, personal care, electronics, none
+sentiment	enum	positive / negative / neutral
+trigger_type	enum	habit / promo-discount / urgent-need / social-recommendation / algorithmic-discovery / accidental / none
+friction_type	enum/list	trust-quality / delivery-time-doubt / price-sensitivity / category-unfamiliarity / app-ux-findability / no-felt-need / none
+segment_signal	enum	loyalist-repeat-only / cautious-explorer / active-explorer / deal-driven / unclear — inferred from a single anonymous item, not verified cross-session behavior; treat as a directional signal, not a confirmed user segment
+evidence_quote	string	short excerpt (≤25 words) supporting the tags
+Scope note: v1 is English-only. Non-English/Hinglish items encountered during ingestion should be filtered out (flagged and excluded, not force-tagged) rather than mistagged — log the excluded count so the synthesis report can note this as a coverage limitation.
+Schema will be validated against a 20-30 item hand-tagged pilot before scaling to the full run (see Milestones).
+7. Functional Requirements
+FR1 — Ingestion module Scrapes/pulls raw items from each source, normalizes into a common schema (source, date, raw_text, metadata), dedupes, stores as structured file (JSON/CSV).
+FR2 — AI tagging module Tags each item against the Section 6 schema using a free-tier chat interface (Claude.ai / ChatGPT free) — no paid API access. Since free tiers don't expose programmatic batch endpoints, this module works as a semi-manual pipeline: items are chunked into batches (e.g. 15-20 per batch, sized to stay within a single chat context comfortably), pasted into the chat interface with a fixed tagging prompt, and the structured JSON response is saved back into the dataset. This is slower than an API-driven pipeline and needs to be budgeted as active time, not idle compute — see Section 11 for the throughput risk this creates.
+Note for Antigravity build: if Antigravity's agent can drive a browser session against the free chat UI, this batching can be semi-automated (paste batch → capture response → next batch) rather than done by hand for all 2600+ items — worth checking early in the build (Milestone 3) rather than assuming full manual copy-paste.
+FR3 — Aggregation module Computes rollups: frequency distributions per field, cross-tabs (e.g. friction_type × segment_signal), category co-occurrence patterns. Outputs as a queryable table/dashboard.
+FR4 — Synthesis module Feeds aggregated patterns + a sample of high-signal evidence_quotes into the same free-tier chat interface to generate a written narrative answering each of the 8 research questions, citing patterns (not raw quotes verbatim beyond the short evidence excerpts already captured). This step is lower-volume (one synthesis pass, not 2600+ items) so it fits comfortably within free-tier limits.
+FR5 — Output/export Exports: (a) full tagged dataset (CSV/JSON), (b) synthesis report (Markdown), (c) summary stats for the 1-slide explainer.
+8. Non-Functional Requirements
+•	Reproducibility: pipeline should be re-runnable end-to-end from raw scrape to synthesis output
+•	Traceability: every synthesized claim in the report should be traceable back to underlying tagged items
+•	Cost-awareness: batch LLM calls efficiently; avoid re-tagging unchanged items on reruns
+•	Transparency for the case study: the workflow itself (not just outputs) should be presentable as one artifact — this is a deliverable, not just a means to one
+9. Success Metrics (for this tool, not the eventual product)
+•	2600+ items successfully ingested and tagged with <5% parse/failure rate
+•	Schema validated against hand-tagged pilot with reasonable agreement before full run
+•	Synthesis report gives a clear, evidenced answer to all 8 research questions
+•	Entire pipeline runs end-to-end in a single documented workflow (presentable as the "workflow link")
+10. Milestones
+1.	Finalize extraction schema; hand-tag 20-30 pilot items
+2.	Build ingestion scrapers per source; collect 2600+ raw items
+3.	Build AI tagging module; run full tagging pass
+4.	Build aggregation + dashboard view
+5.	Generate synthesis report
+6.	Package workflow + 1-slide explainer
+11. Open Risks
+•	Free-tier LLM tagging is the biggest schedule risk. Tagging 2600+ items via a chat interface (no API) is materially slower than automated batch calls — plan real hours for this, and check early whether Antigravity can semi-automate the paste/capture loop (see FR2 note) before assuming it's fully manual
+•	Rebalanced sourcing (Section 5) weights Reddit and store reviews more heavily than social media/product reviews — open question: if the case study evaluation expects visible depth across all seven channels, these two rows should be scaled back up even at the cost of manual-curation time
+•	Reddit's free API tier has rate limits — pipeline should batch/pace requests to avoid throttling
+•	Some categories/segments may be underrepresented in public review text vs. actual user behavior — synthesis should flag where evidence is thin
+•	LLM tagging consistency across a 2600+ item batch, done via chat interface in separate sessions — pilot validation step exists specifically to catch schema/prompt drift early, and the fixed tagging prompt (FR2) should be reused verbatim across every batch to keep tagging consistent
+•	English-only scope (v1) means Hinglish/regional-language posts are excluded — synthesis report should note the excluded count as a coverage limitation, not silently omit it
