@@ -478,84 +478,209 @@ export default function Home() {
               <div>
                 <h1 className="dashboard-title">Test Yourself Sandbox</h1>
                 <div className="dashboard-sub" style={{maxWidth: '800px'}}>
-                  Input any customer review or feedback below to observe how the AI processes, translates, and maps the feedback through our pipeline.
+                  Interactive walkthrough of the AI-powered classification and validation pipeline
                 </div>
               </div>
             </header>
 
-            <textarea 
-              className="sandbox-textarea"
-              placeholder="Paste or write a customer review here..."
-              value={sandboxText}
-              onChange={e => setSandboxText(e.target.value)}
-            />
+            {/* PIPELINE DATA FLOW (NEW) */}
+            <div className="card" style={{ marginBottom: '30px', padding: '30px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>&lt;&gt; Pipeline Tech Stack:</span>
+                  <span className="tech-badge">APIFY SDK</span>
+                  <span className="tech-badge">PYTHON (PANDAS)</span>
+                  <span className="tech-badge">GEMINI 2.0 FLASH API</span>
+                  <span className="tech-badge">VERCEL SERVERLESS</span>
+                  <span className="tech-badge">REACT (VITE)</span>
+                </div>
+                <a href="#" style={{ color: 'var(--primary-accent)', fontSize: '13px', textDecoration: 'underline' }}>Hide Detailed File Mapping</a>
+              </div>
 
-            <div className="sandbox-suggestions">
-              <span className="sugg-label">Suggestions:</span>
-              <button className="sugg-btn" onClick={() => handleExample("Delivery is fast but they forgot my fresh coriander. Refund took 3 hours! Please improve customer support.")}>Example 1</button>
-              <button className="sugg-btn" onClick={() => handleExample("I usually buy groceries but I tried buying a fast charger yesterday. It was a fake brand and got extremely hot. I am never buying electronics from here again.")}>Example 2</button>
-              <button className="sugg-btn" onClick={() => handleExample("Great app for daily milk, but I wish you guys had more organic brands and maybe some pet food. The current selection is boring.")}>Example 3</button>
-              <div style={{flexGrow: 1}}></div>
-              <button className="btn-primary" onClick={runSandbox} disabled={loading}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-                {loading ? 'Processing Pipeline...' : 'Run Pipeline Analysis'}
-              </button>
+              <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '4px' }}>Pipeline Data Flow</h2>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '32px' }}>From raw user voice to synthesized customer research insight cards.</p>
+
+              <div className="pipeline-flow-container">
+                <div className="flow-box-row">
+                  <div className="flow-box">
+                    <div className="flow-box-title" style={{color: '#3b82f6'}}>1. Ingestion</div>
+                    <div className="flow-box-sub">Apify Scrapers</div>
+                  </div>
+                  <div className="flow-arrow">→</div>
+                  
+                  <div className="flow-box">
+                    <div className="flow-box-title" style={{color: '#a855f7'}}>2. Cleansing</div>
+                    <div className="flow-box-sub">Pandas Filter</div>
+                  </div>
+                  <div className="flow-arrow">→</div>
+                  
+                  <div className="flow-box">
+                    <div className="flow-box-title" style={{color: '#F7D046'}}>3. Gemini LLM</div>
+                    <div className="flow-box-sub">100-batch Classify</div>
+                  </div>
+                  <div className="flow-arrow">→</div>
+                  
+                  <div className="flow-box">
+                    <div className="flow-box-title" style={{color: '#f97316'}}>4. Quality Check</div>
+                    <div className="flow-box-sub">Human-in-the-loop</div>
+                  </div>
+                  <div className="flow-arrow">→</div>
+                  
+                  <div className="flow-box">
+                    <div className="flow-box-title" style={{color: '#10b981'}}>5. UI Dashboard</div>
+                    <div className="flow-box-sub">React Charts</div>
+                  </div>
+                </div>
+
+                <div className="flow-desc-row">
+                  <div className="flow-desc">
+                    <div className="flow-desc-title" style={{color: '#3b82f6'}}>1. Data Gathering</div>
+                    <div className="flow-desc-text">Scrapes organic social posts (via Apify) & app store reviews.</div>
+                    <div className="flow-file">📁 pipeline/twitter_reddit_extractor.py</div>
+                  </div>
+                  
+                  <div className="flow-desc">
+                    <div className="flow-desc-title" style={{color: '#a855f7'}}>2. Pandas Cleansing</div>
+                    <div className="flow-desc-text">Deduplicates text, filters nulls, and deletes reviews sub-3 words.</div>
+                    <div className="flow-file">📁 pipeline/script.ipynb</div>
+                  </div>
+
+                  <div className="flow-desc">
+                    <div className="flow-desc-title" style={{color: '#F7D046'}}>3. Gemini Classification</div>
+                    <div className="flow-desc-text">Batch classifies (100 RPM) sentiments, tags, and mapping.</div>
+                    <div className="flow-file">📁 api/gemini.js, classified_reviews.csv</div>
+                  </div>
+
+                  <div className="flow-desc">
+                    <div className="flow-desc-title" style={{color: '#f97316'}}>4. PM Quality Audit</div>
+                    <div className="flow-desc-text">Human audits Hinglish/Hindi tags and overrides classifications.</div>
+                    <div className="flow-file">📁 src/App.jsx, validation_audit_sample.csv</div>
+                  </div>
+
+                  <div className="flow-desc">
+                    <div className="flow-desc-title" style={{color: '#10b981'}}>5. UI Visualization</div>
+                    <div className="flow-desc-text">Aggregates metrics, displays segments, and renders charts.</div>
+                    <div className="flow-file">📁 src/App.jsx, src/components/*</div>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {loading && (
-               <div style={{marginTop: '20px', color: 'var(--text-muted)'}}>
-                 <p>✓ 1. Ingestion & Text Cleansing</p>
-                 <p className="blink-text">⏳ 2. Gemini 2.5 LLM Classification (Tagging Sentiment & Taxonomy)...</p>
-               </div>
-            )}
+            {/* CLASSIFICATION SANDBOX */}
+            <div className="card" style={{ padding: '30px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>✨ AI Classification Sandbox</h2>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '24px' }}>Input any customer review or feedback below to observe how the AI processes, translates, and maps the feedback through our pipeline.</p>
+              
+              <textarea 
+                className="sandbox-textarea"
+                placeholder="Paste or write a customer review here (e.g. 'Delivery boy was rude, but grocery items are good quality')..."
+                value={sandboxText}
+                onChange={e => setSandboxText(e.target.value)}
+              />
 
-            {sandboxResult && !loading && (
-              <div className="classification-report">
-                <div className="report-header">
-                  <div className="report-title">CLASSIFICATION REPORT</div>
-                  <div className="emotion-tag">
-                     {sandboxResult.themes?.[0]?.confidence === 'High' ? '🎯 HIGH CONFIDENCE' : '🤔 MEDIUM CONFIDENCE'}
-                  </div>
-                </div>
-                <div className="report-body">
-                  <div>
-                    <div className="report-label">IDENTIFIED THEMES</div>
-                    {sandboxResult.themes?.slice(0, 3).map((t: any, i: number) => (
-                      <span key={i} className="tag-pill">{t.title || t.t}</span>
-                    ))}
-                  </div>
-                  <div>
-                    <div className="report-label">TARGET RESEARCH QUESTION</div>
-                    <div className="target-q">
-                      ↳ {sandboxResult.answers?.[0]?.question || "Q6: What frustrations emerge repeatedly?"}
+              <div className="sandbox-suggestions">
+                <span className="sugg-label">Suggestions:</span>
+                <button className="sugg-btn" onClick={() => handleExample("Delivery is fast but they forgot my fresh coriander. Refund took 3 hours! Please improve customer support.")}>Example 1</button>
+                <button className="sugg-btn" onClick={() => handleExample("I usually buy groceries but I tried buying a fast charger yesterday. It was a fake brand and got extremely hot. I am never buying electronics from here again.")}>Example 2</button>
+                <button className="sugg-btn" onClick={() => handleExample("Great app for daily milk, but I wish you guys had more organic brands and maybe some pet food. The current selection is boring.")}>Example 3</button>
+                <div style={{flexGrow: 1}}></div>
+                <button className="btn-primary" onClick={runSandbox} disabled={loading} style={{ background: '#F7D046', color: '#000' }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                  {loading ? 'Processing Pipeline...' : 'Run Pipeline Analysis'}
+                </button>
+              </div>
+
+              {loading && (
+                 <div style={{marginTop: '20px', color: 'var(--text-muted)'}}>
+                   <p>✓ 1. Ingestion & Text Cleansing</p>
+                   <p className="blink-text">⏳ 2. Gemini 2.5 LLM Classification (Tagging Sentiment & Taxonomy)...</p>
+                 </div>
+              )}
+
+              {sandboxResult && !loading && (
+                <div className="classification-report">
+                  <div className="report-header">
+                    <div className="report-title">CLASSIFICATION REPORT</div>
+                    <div className="emotion-tag">
+                       {sandboxResult.themes?.[0]?.confidence === 'High' ? '🎯 HIGH CONFIDENCE' : '🤔 MEDIUM CONFIDENCE'}
                     </div>
                   </div>
-                  <div className="report-analysis">
-                    <strong>AI Analysis:</strong> {sandboxResult.themes?.[0]?.insight || "This review indicates operational friction, placing it under repeated customer frustrations."}
+                  <div className="report-body">
+                    <div>
+                      <div className="report-label">IDENTIFIED THEMES</div>
+                      {sandboxResult.themes?.slice(0, 3).map((t: any, i: number) => (
+                        <span key={i} className="tag-pill">{t.title || t.t}</span>
+                      ))}
+                    </div>
+                    <div>
+                      <div className="report-label">TARGET RESEARCH QUESTION</div>
+                      <div className="target-q">
+                        ↳ {sandboxResult.answers?.[0]?.question || "Q6: What frustrations emerge repeatedly?"}
+                      </div>
+                    </div>
+                    <div className="report-analysis">
+                      <strong>AI Analysis:</strong> {sandboxResult.themes?.[0]?.insight || "This review indicates operational friction, placing it under repeated customer frustrations."}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
-            <div className="card" style={{marginTop: '60px', padding: '30px'}}>
-              <h2 className="section-title" style={{display: 'flex', justifyContent: 'space-between'}}>
-                Pipeline Setup & Tech Stack
-                <span className="dataset-badge" style={{color: 'var(--primary-accent)', fontSize: '11px', padding: '4px 8px'}}>DEMO MODE</span>
+            {/* SETUP & TECH STACK */}
+            <div className="card" style={{marginTop: '30px', padding: '30px'}}>
+              <h2 className="section-title" style={{display: 'flex', justifyContent: 'space-between', marginBottom: '24px'}}>
+                ⚙️ Pipeline Setup & Tech Stack
+                <span className="dataset-badge" style={{color: 'var(--primary-accent)', fontSize: '11px', padding: '4px 8px', border: '1px solid var(--primary-accent)'}}>DEMO MODE</span>
               </h2>
-              <div style={{marginTop: '20px', display: 'flex', gap: '20px'}}>
-                <div style={{background: 'rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '8px', fontSize: '12px', color: 'var(--text-muted)'}}>
-                  ⚡ Gemini 2.5 Flash Lite API
+              
+              <div style={{ display: 'flex', gap: '30px' }}>
+                <div style={{ flex: '2' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '8px' }}>Our Ingestion & Processing Architecture</h3>
+                  <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '20px' }}>
+                    This automated demo processes a fixed set of 50 raw reviews from validation_audit_sample.csv using our optimized production pipeline logic.
+                  </p>
+                  
+                  <div className="tech-grid">
+                    <div className="tech-item">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 12h4l3-9 5 18 3-9h5"/></svg>
+                      Apify (Reddit/Twitter Extractors)
+                    </div>
+                    <div className="tech-item">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                      Python (Pandas/BeautifulSoup)
+                    </div>
+                    <div className="tech-item">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                      Gemini 3.1 Flash Lite API
+                    </div>
+                    <div className="tech-item">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                      Batch Prompting (Optimized RPM)
+                    </div>
+                    <div className="tech-item">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                      PM Quality Audit Workbench
+                    </div>
+                  </div>
                 </div>
-                <div style={{background: 'rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '8px', fontSize: '12px', color: 'var(--text-muted)'}}>
-                  🔄 Vercel Serverless Pipeline
-                </div>
-                <div style={{background: 'rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '8px', fontSize: '12px', color: 'var(--text-muted)'}}>
-                  📊 Batch Prompting (Optimized RPM)
+                
+                <div style={{ flex: '1', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F7D046" strokeWidth="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.92-10.44l5.66-5.66"/></svg>
+                    Vercel Serverless Pipeline
+                  </div>
+                  <button style={{ width: '100%', background: '#F7D046', color: '#000', padding: '12px', borderRadius: '4px', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                    <span>▶</span> Initiate Automated Pipeline
+                  </button>
                 </div>
               </div>
-              <p style={{marginTop: '20px', fontSize: '13px', color: 'var(--text-muted)'}}>
-                This automated demo uses the live backend pipeline logic. To see the full strategic insights compiled from all 2500+ multi-channel reviews, please visit the <strong>Insights Dashboard</strong>.
-              </p>
+
+              <div style={{ border: '1px solid rgba(247, 208, 70, 0.3)', background: 'rgba(247, 208, 70, 0.05)', padding: '16px', borderRadius: '8px', marginTop: '32px', fontSize: '12px', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <span style={{ fontSize: '16px' }}>⚠️</span> 
+                <div>
+                  <strong style={{color: '#F7D046'}}>Demo Dataset Disclaimer:</strong> This pipeline uses a 50-review demo sample. To see the full strategic insights compiled from all 2500+ multi-channel reviews, please visit the <strong>Insights Dashboard</strong>.
+                </div>
+              </div>
             </div>
 
           </div>

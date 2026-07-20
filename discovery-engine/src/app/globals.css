@@ -859,3 +859,104 @@ h1, h2, h3, h4, .outfit {
 .page-btn:hover {
   background: rgba(255, 255, 255, 0.05);
 }
+
+.tech-badge {
+  border: 1px solid var(--primary-accent);
+  color: var(--primary-accent);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.flow-box-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.flow-box {
+  flex: 1;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.flow-box-title {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.flow-box-sub {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.flow-arrow {
+  color: var(--text-muted);
+  font-size: 14px;
+  width: 16px;
+  text-align: center;
+}
+
+.flow-desc-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.flow-desc {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: calc(20% - 19.2px); /* 5 items, accounting for gaps */
+}
+
+.flow-desc-title {
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.flow-desc-text {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.flow-file {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  color: var(--text-muted);
+  word-break: break-all;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tech-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.tech-item {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
