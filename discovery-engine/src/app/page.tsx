@@ -171,7 +171,7 @@ export default function Home() {
         <div className="sidebar-header">
           <div className="logo-box">blinkit</div>
           <div>
-            <div className="brand-name">Growth Engine</div>
+            <div className="brand-name">Discovery Engine</div>
           </div>
         </div>
         

@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Blinkit Category Discovery Prototype",
+  title: "Blinkit Discovery Engine & Sandbox",
   description: "Prototype simulating the discovery feed and predictable pricing cart.",
 };
 
