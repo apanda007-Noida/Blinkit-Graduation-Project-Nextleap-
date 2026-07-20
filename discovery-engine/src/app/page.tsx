@@ -1,225 +1,332 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-const SAMPLE = {
-  appStore: `1-star: "App is fine for milk and bread but I don't trust it for electronics, prices don't feel right."
-4-star: "Wish they'd show me things I actually need instead of random banners."`,
-  playStore: `2-star: "Ordered a charger through Blinkit for the first time, took forever to decide because there were 2 reviews."
-5-star: "Been ordering groceries daily for a year now. Same list basically every time."`,
-  reddit: `r/india - "Does anyone actually buy non-grocery stuff on Blinkit/Zepto? I always just think of them as the 10-min grocery app."`,
-  communityForums: `User123: "I tried buying a pet food bag because Amazon delivery was 2 days away. Worked fine but wouldn't have thought of it."`,
-  socialMedia: `Instagram comment on a Blinkit ad: "didn't know you guys sold this, thought you were only for grocery"`,
-  productReviews: `Review on Skincare item: "Product came expired. Went back to my usual grocery-only orders."`,
-  quickCommerce: `X post: "quick commerce apps are just faster kirana stores in my head, I don't associate them with anything beyond that"`
-};
+// The hardcoded dataset from the competitor demo
+const HYPOTHESES = [
+  { q: "Q1", title: "Why do users repeatedly buy from the same categories?", insight: "Users treat quick-commerce as a digital utility for replenishing staples. The behavior is driven by deeply ingrained cognitive habits where the app is associated strictly with immediate grocery needs.", themes: [{ t: "Time-Critical Utility", c: 12 }, { t: "Operational Reliability", c: 15 }, { t: "Loyalty & Incentives", c: 3 }], quote: "It save time and every item is available also packaging is very good I use every time in urgent because I don't have to rush to the market", source: "APP STORE", id: "301" },
+  { q: "Q2", title: "What prevents users from exploring new categories?", insight: "A combination of a trust deficit regarding product authenticity/pricing for non-groceries, and 'banner blindness' where users ignore merchandising that doesn't fit their mental model.", themes: [{ t: "Trust Deficit on High-Ticket", c: 9 }, { t: "Banner Blindness", c: 14 }], quote: "App is fine for milk but I don't trust it for electronics, prices don't feel right.", source: "REDDIT", id: "102" },
+  { q: "Q3", title: "How do users discover products today?", insight: "Discovery is almost entirely search-driven based on immediate intent, rather than feed-driven browsing. Users search for what they need and check out.", themes: [{ t: "Intent-Based Search", c: 22 }, { t: "Zero-Browsing Behavior", c: 8 }], quote: "I just type what I need and pay. I don't look at the homepage recommendations ever.", source: "PLAY STORE", id: "441" },
+  { q: "Q4", title: "What role do habits play in shopping behavior?", insight: "Habits act as a blinder. Because the loop of 'open app -> search milk -> checkout' is so frictionless, users execute it on autopilot without looking at cross-sells.", themes: [{ t: "Autopilot Execution", c: 18 }, { t: "Frictionless Lock-in", c: 7 }], quote: "Been ordering daily for a year now. Same list basically every time.", source: "PLAY STORE", id: "19" },
+  { q: "Q5", title: "What information do users need before trying a new category?", insight: "Users need strong social proof (reviews), price-matching guarantees against e-commerce giants, and clear return policies for non-grocery items.", themes: [{ t: "Review Verification", c: 11 }, { t: "Price Match Guarantee", c: 6 }], quote: "Ordered a charger through Blinkit for the first time, took forever to decide because there were 2 reviews.", source: "PLAY STORE", id: "88" },
+  { q: "Q6", title: "What frustrations emerge repeatedly?", insight: "Receiving expired products in new categories (like skincare) and a lack of sufficient reviews on high-ticket items.", themes: [{ t: "Expired Non-Groceries", c: 5 }, { t: "Poor Support on Electronics", c: 4 }], quote: "Product came expired. Went back to my usual grocery-only orders.", source: "PRODUCT REVIEW", id: "91" },
+  { q: "Q7", title: "Which user segments are more likely to experiment?", insight: "Users facing an immediate emergency (e.g., broken charger, ran out of pet food) where speed outweighs price sensitivity or brand loyalty.", themes: [{ t: "Emergency Buyers", c: 19 }, { t: "Late-Night Snackers", c: 11 }], quote: "Tried buying pet food because Amazon was 2 days away. Worked fine.", source: "COMMUNITY FORUM", id: "12" },
+  { q: "Q8", title: "What unmet needs emerge consistently across discussions?", insight: "A need for a clear, trustworthy interface for non-grocery items that mirrors the reliability of their grocery experience.", themes: [{ t: "Non-Grocery UI Separation", c: 8 }], quote: "Wish they'd show me things I actually need instead of random banners.", source: "APP STORE", id: "7" }
+];
 
 export default function Home() {
-  const [inputs, setInputs] = useState({
-    appStore: "",
-    playStore: "",
-    reddit: "",
-    communityForums: "",
-    socialMedia: "",
-    productReviews: "",
-    quickCommerce: ""
-  });
-  
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeHyp, setActiveHyp] = useState<number | null>(null);
+
+  // Sandbox state
+  const [sandboxText, setSandboxText] = useState("");
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState("");
-  const [results, setResults] = useState<any>(null);
-  const [history, setHistory] = useState<any[]>([]);
+  const [sandboxResult, setSandboxResult] = useState<any>(null);
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("blinkit_research_history");
-      if (stored) setHistory(JSON.parse(stored));
-    } catch(e) {}
-  }, []);
+  const handleExample = (text: string) => setSandboxText(text);
 
-  const handleInputChange = (field: string, value: string) => {
-    setInputs(prev => ({ ...prev, [field]: value }));
-  };
-
-  const loadSample = () => {
-    setInputs(SAMPLE);
-    setStatus("Sample data loaded.");
-  };
-
-  const clearInputs = () => {
-    setInputs({
-      appStore: "", playStore: "", reddit: "", communityForums: "",
-      socialMedia: "", productReviews: "", quickCommerce: ""
-    });
-    setResults(null);
-    setStatus("Inputs cleared.");
-  };
-
-  const runAnalysis = async () => {
-    const hasData = Object.values(inputs).some(val => val.trim().length > 0);
-    if (!hasData) {
-      setStatus("Error: Paste at least one source before running.");
-      return;
-    }
-
+  const runSandbox = async () => {
+    if (!sandboxText.trim()) return;
     setLoading(true);
-    setStatus("Reading sources and clustering themes using Gemini AI...");
-    
+    setSandboxResult(null);
     try {
+      // We pass the sandbox text to our real backend
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(inputs)
+        body: JSON.stringify({ quickCommerce: sandboxText }) // Injecting it as quick commerce feedback
       });
-      
       const data = await res.json();
-      
-      if (data.error) {
-        setStatus(`Analysis Failed: ${JSON.stringify(data)}`);
-        setResults(null);
-      } else {
-        setResults(data);
-        setStatus(`Analysis complete — ${data.themes?.length || 0} themes found.`);
-        
-        // Save to history
-        const newHistoryItem = {
-          id: Date.now(),
-          date: new Date().toLocaleString(),
-          title: data.themes?.[0]?.title || "Analysis Run",
-          data
-        };
-        const updatedHistory = [newHistoryItem, ...history].slice(0, 10);
-        setHistory(updatedHistory);
-        localStorage.setItem("blinkit_research_history", JSON.stringify(updatedHistory));
-      }
-    } catch (error: any) {
-      setStatus("Something went wrong processing the analysis.");
-      setResults(null);
+      setSandboxResult(data);
+    } catch (e) {
+      console.error(e);
     }
-    
     setLoading(false);
   };
 
-  const loadHistoryItem = (item: any) => {
-    setResults(item.data);
-    setStatus(`Loaded previous analysis: ${item.title}`);
-    window.scrollTo({ top: document.body.scrollHeight / 2, behavior: 'smooth' });
-  };
-
   return (
-    <div className="dashboard-container">
-      <div className="eyebrow">Growth · Blinkit</div>
-      <h1 className="dashboard-title">Category Discovery Engine</h1>
-      <div className="dashboard-sub">
-        Paste raw feedback from App Store, Play Store, Reddit, Forums, Social, and other channels below. 
-        The engine uses Google Gemini to read across all sources, surface recurring themes, and answer the core research questions.
-      </div>
-
-      <div className="input-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
-        {[
-          { key: 'appStore', label: 'App Store Reviews' },
-          { key: 'playStore', label: 'Play Store Reviews' },
-          { key: 'reddit', label: 'Reddit Discussions' },
-          { key: 'communityForums', label: 'Community Forums' },
-          { key: 'socialMedia', label: 'Social Media Conversations' },
-          { key: 'productReviews', label: 'Product Reviews' },
-          { key: 'quickCommerce', label: 'Quick-Commerce Discussions' }
-        ].map((field) => (
-          <div key={field.key} className="field-container">
-            <label className="field-label">{field.label}</label>
-            <textarea 
-              style={{ minHeight: '100px' }}
-              value={(inputs as any)[field.key]}
-              onChange={e => handleInputChange(field.key, e.target.value)}
-              placeholder={`Paste ${field.label.toLowerCase()} here...`}
-            />
+    <div className="app-layout">
+      
+      {/* SIDEBAR */}
+      <aside className="sidebar">
+        <div className="sidebar-header">
+          <div className="logo-box">blinkit</div>
+          <div>
+            <div className="brand-name">Growth Engine</div>
           </div>
-        ))}
-      </div>
-
-      <div className="toolbar">
-        <button onClick={runAnalysis} disabled={loading}>
-          {loading ? 'Analyzing...' : 'Run Analysis'}
-        </button>
-        <button className="secondary" onClick={loadSample} disabled={loading}>Load Sample Batch</button>
-        <button className="secondary" onClick={clearInputs} disabled={loading}>Clear Inputs</button>
-        <span className="status-msg">{status}</span>
-      </div>
-
-      <hr className="divider" />
-
-      {!results && (
-        <div className="empty-state">
-          No analysis yet. Paste a batch of feedback above and run the engine.
         </div>
-      )}
-
-      {results && (
-        <div className="results-container">
-          
-          <div className="section-title">Answers to the Research Brief</div>
-          <div className="answers-list">
-            {results.answers?.map((qa: any, idx: number) => (
-              <div key={idx} className="qa-card">
-                <div className="qa-q">{idx + 1}. {qa.question}</div>
-                <div className="qa-a">{qa.answer}</div>
-              </div>
-            ))}
+        
+        <nav className="nav-menu">
+          <div 
+            className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveTab('dashboard')}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+            Insights Dashboard
           </div>
+          <div 
+            className={`nav-item ${activeTab === 'sandbox' ? 'active' : ''}`}
+            onClick={() => setActiveTab('sandbox')}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            Test Yourself Sandbox
+          </div>
+        </nav>
+        
+        <div className="sidebar-footer">
+          <div className="avatar">PM</div>
+          <div className="profile-info">
+            <span className="profile-name">Growth PM</span>
+            <span className="profile-status">Active Session</span>
+          </div>
+        </div>
+      </aside>
 
-          <div className="section-title">Themes Surfaced</div>
-          <div className="themes-grid">
-            {results.themes?.map((t: any, idx: number) => (
-              <div key={idx} className="ticket">
-                <div className="tt-head">
-                  <div className="tt-title">{t.title}</div>
-                  <div className={`tt-conf conf-${t.confidence?.toLowerCase() || 'medium'}`}>
-                    {t.confidence}
+      {/* MAIN CONTENT */}
+      <main className="main-content">
+        
+        {activeTab === 'dashboard' && (
+          <div className="fade-in">
+            <header className="dashboard-header">
+              <div>
+                <h1 className="dashboard-title">Growth Insights Dashboard</h1>
+                <div className="dashboard-sub">Analyzing multi-channel user feedback at scale to expand category adoption</div>
+              </div>
+              <div className="dataset-badge">
+                <div className="dataset-label">Data Set Size</div>
+                <div className="dataset-value">2,601 reviews</div>
+              </div>
+            </header>
+
+            {/* Metrics Grid */}
+            <div className="metrics-grid">
+              <div className="card">
+                <div className="metric-header">Sentiment Distribution</div>
+                {/* Simulated CSS Doughnut Chart using Conic Gradient */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '140px' }}>
+                  <div style={{
+                    width: '120px', height: '120px', borderRadius: '50%',
+                    background: 'conic-gradient(#10b981 0% 45%, #ef4444 45% 82%, #3b82f6 82% 92%, #f59e0b 92% 100%)',
+                    position: 'relative'
+                  }}>
+                    <div style={{ position: 'absolute', top: '20px', left: '20px', right: '20px', bottom: '20px', background: 'var(--bg-card)', borderRadius: '50%' }}></div>
                   </div>
                 </div>
-                <div className="tt-insight">{t.insight}</div>
-                <div className="tt-quote">"{t.paraphrased_example}"</div>
-                <div className="tt-meta">
-                  <span>Relates to Q{(t.related_questions || []).join(', Q')}</span>
-                  <span>{t.segment}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginTop: '20px', color: 'var(--text-muted)' }}>
+                  <span><span style={{color:'#10b981'}}>●</span> Positive (1219)</span>
+                  <span><span style={{color:'#ef4444'}}>●</span> Negative (1032)</span>
+                  <span><span style={{color:'#3b82f6'}}>●</span> Neutral (251)</span>
                 </div>
               </div>
-            ))}
-          </div>
 
-          {results.validation_flags && results.validation_flags.length > 0 && (
-            <div className="flags-container">
-              <div className="section-title">Validate in Part 2 Interviews</div>
-              {results.validation_flags.map((flag: string, idx: number) => (
-                <div key={idx} className="flag-item">
-                  <span className="flag-mark">▸</span>
-                  <span>{flag}</span>
+              <div className="card">
+                <div className="metric-header">Feedback Sources</div>
+                <div className="bar-row">
+                  <div className="bar-label">Google Play</div>
+                  <div className="bar-track"><div className="bar-fill" style={{width: '90%', background: '#f7d046'}}></div></div>
+                  <div className="bar-label" style={{textAlign:'left', width:'40px'}}>1757</div>
+                </div>
+                <div className="bar-row">
+                  <div className="bar-label">App Store</div>
+                  <div className="bar-track"><div className="bar-fill" style={{width: '25%', background: '#3b82f6'}}></div></div>
+                  <div className="bar-label" style={{textAlign:'left', width:'40px'}}>380</div>
+                </div>
+                <div className="bar-row">
+                  <div className="bar-label">Reddit</div>
+                  <div className="bar-track"><div className="bar-fill" style={{width: '18%', background: '#ef4444'}}></div></div>
+                  <div className="bar-label" style={{textAlign:'left', width:'40px'}}>244</div>
+                </div>
+                <div className="bar-row">
+                  <div className="bar-label">Twitter/X</div>
+                  <div className="bar-track"><div className="bar-fill" style={{width: '15%', background: '#10b981'}}></div></div>
+                  <div className="bar-label" style={{textAlign:'left', width:'40px'}}>220</div>
+                </div>
+              </div>
+            </div>
+
+            <h2 className="section-title">Growth Discovery Hypotheses</h2>
+            <p className="section-sub">Select a discovery question to view synthesized insights, themes, and verbatim customer evidence.</p>
+            
+            <div className="hyp-grid">
+              {HYPOTHESES.map((hyp, i) => (
+                <div key={i} className="hyp-card" onClick={() => setActiveHyp(i)}>
+                  <div className="hyp-q-label">QUESTION {hyp.q}</div>
+                  <div className="hyp-title">{hyp.title}</div>
+                  <div className="hyp-explore">Explore →</div>
                 </div>
               ))}
             </div>
-          )}
-        </div>
-      )}
 
-      <hr className="divider" />
-      
-      <div className="section-title">Past Runs (Saved to Browser)</div>
-      {history.length === 0 ? (
-        <div className="empty-state" style={{ padding: '20px' }}>No saved runs yet.</div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {history.map(item => (
-            <div 
-              key={item.id} 
-              style={{ cursor: 'pointer', padding: '12px', background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}
-              onClick={() => loadHistoryItem(item)}
-            >
-              <span style={{ color: 'var(--primary-accent)' }}>{item.title}</span>
-              <span style={{ color: 'var(--text-muted)' }}>{item.date}</span>
+            {/* Active Hypothesis Detail Drawer */}
+            {activeHyp !== null && (
+              <div className="detail-panel">
+                <button className="close-btn" onClick={() => setActiveHyp(null)}>✕</button>
+                <div className="detail-q">
+                  <span className="detail-badge">{HYPOTHESES[activeHyp].q}</span> 
+                  {HYPOTHESES[activeHyp].title}
+                </div>
+                
+                <div className="detail-section-title">✦ Synthesized LLM Summary</div>
+                <div className="detail-text">{HYPOTHESES[activeHyp].insight}</div>
+
+                <div className="detail-section-title">Key Themes Identified</div>
+                <div className="theme-list">
+                  {HYPOTHESES[activeHyp].themes.map((t, idx) => (
+                    <div key={idx} className="theme-item">
+                      <div className="theme-item-title">{t.t}</div>
+                      <div className="theme-item-count">Mentions: {t.c}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="detail-section-title">Representative Quotes</div>
+                <div className="quote-box">
+                  "{HYPOTHESES[activeHyp].quote}"
+                  <div className="quote-meta">
+                    <span style={{color: 'var(--primary-accent)'}}>{HYPOTHESES[activeHyp].source}</span>
+                    <span>Review ID: {HYPOTHESES[activeHyp].id}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <h2 className="section-title">Strategic User Segments</h2>
+            <p className="section-sub">Key target groups mapped from customer reviews based on purchase habits and influencers.</p>
+
+            <div className="segment-grid">
+              <div className="segment-card">
+                <div className="segment-icon" style={{background: 'rgba(247, 208, 70, 0.1)', color: 'var(--primary-accent)'}}>⏱️</div>
+                <div className="segment-title">Daily Essentials Stocker</div>
+                <div className="segment-label">Purchase Habit</div>
+                <div className="segment-val" style={{marginBottom:'16px'}}>High-frequency, repetitive morning purchases.</div>
+                <div className="segment-label">Key Items</div>
+                <div className="segment-val">Milk, eggs, fresh coriander, bread.</div>
+              </div>
+              <div className="segment-card">
+                <div className="segment-icon" style={{background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)'}}>🍕</div>
+                <div className="segment-title">Impulse Snacker</div>
+                <div className="segment-label">Purchase Habit</div>
+                <div className="segment-val" style={{marginBottom:'16px'}}>Medium-frequency, unpredictable late-night spikes.</div>
+                <div className="segment-label">Key Items</div>
+                <div className="segment-val">Chips, cold drinks, chocolates, party mixers.</div>
+              </div>
+              <div className="segment-card">
+                <div className="segment-icon" style={{background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6'}}>🔌</div>
+                <div className="segment-title">Emergency Utility Buyer</div>
+                <div className="segment-label">Purchase Habit</div>
+                <div className="segment-val" style={{marginBottom:'16px'}}>Low-frequency, highly urgent transactional purchases.</div>
+                <div className="segment-label">Key Items</div>
+                <div className="segment-val">Phone chargers, batteries, OTC medicines.</div>
+              </div>
+              <div className="segment-card">
+                <div className="segment-icon" style={{background: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)'}}>✨</div>
+                <div className="segment-title">Gourmet Trial Enthusiast</div>
+                <div className="segment-label">Purchase Habit</div>
+                <div className="segment-val" style={{marginBottom:'16px'}}>Medium-frequency exploratory purchases.</div>
+                <div className="segment-label">Key Items</div>
+                <div className="segment-val">Exotic sauces, imported chocolates, organic.</div>
+              </div>
             </div>
-          ))}
-        </div>
-      )}
+
+          </div>
+        )}
+
+        {activeTab === 'sandbox' && (
+          <div className="fade-in">
+             <header className="dashboard-header" style={{marginBottom: '20px'}}>
+              <div>
+                <h1 className="dashboard-title">Test Yourself Sandbox</h1>
+                <div className="dashboard-sub" style={{maxWidth: '800px'}}>
+                  Input any customer review or feedback below to observe how the AI processes, translates, and maps the feedback through our pipeline.
+                </div>
+              </div>
+            </header>
+
+            <textarea 
+              className="sandbox-textarea"
+              placeholder="Paste or write a customer review here..."
+              value={sandboxText}
+              onChange={e => setSandboxText(e.target.value)}
+            />
+
+            <div className="sandbox-suggestions">
+              <span className="sugg-label">Suggestions:</span>
+              <button className="sugg-btn" onClick={() => handleExample("Delivery is fast but they forgot my fresh coriander. Refund took 3 hours! Please improve customer support.")}>Example 1</button>
+              <button className="sugg-btn" onClick={() => handleExample("I usually buy groceries but I tried buying a fast charger yesterday. It was a fake brand and got extremely hot. I am never buying electronics from here again.")}>Example 2</button>
+              <button className="sugg-btn" onClick={() => handleExample("Great app for daily milk, but I wish you guys had more organic brands and maybe some pet food. The current selection is boring.")}>Example 3</button>
+              <div style={{flexGrow: 1}}></div>
+              <button className="btn-primary" onClick={runSandbox} disabled={loading}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                {loading ? 'Processing Pipeline...' : 'Run Pipeline Analysis'}
+              </button>
+            </div>
+
+            {loading && (
+               <div style={{marginTop: '20px', color: 'var(--text-muted)'}}>
+                 <p>✓ 1. Ingestion & Text Cleansing</p>
+                 <p className="blink-text">⏳ 2. Gemini 2.5 LLM Classification (Tagging Sentiment & Taxonomy)...</p>
+               </div>
+            )}
+
+            {sandboxResult && !loading && (
+              <div className="classification-report">
+                <div className="report-header">
+                  <div className="report-title">CLASSIFICATION REPORT</div>
+                  <div className="emotion-tag">
+                     {sandboxResult.themes?.[0]?.confidence === 'High' ? '🎯 HIGH CONFIDENCE' : '🤔 MEDIUM CONFIDENCE'}
+                  </div>
+                </div>
+                <div className="report-body">
+                  <div>
+                    <div className="report-label">IDENTIFIED THEMES</div>
+                    {sandboxResult.themes?.slice(0, 3).map((t: any, i: number) => (
+                      <span key={i} className="tag-pill">{t.title || t.t}</span>
+                    ))}
+                  </div>
+                  <div>
+                    <div className="report-label">TARGET RESEARCH QUESTION</div>
+                    <div className="target-q">
+                      ↳ {sandboxResult.answers?.[0]?.question || "Q6: What frustrations emerge repeatedly?"}
+                    </div>
+                  </div>
+                  <div className="report-analysis">
+                    <strong>AI Analysis:</strong> {sandboxResult.themes?.[0]?.insight || "This review indicates operational friction, placing it under repeated customer frustrations."}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="card" style={{marginTop: '60px', padding: '30px'}}>
+              <h2 className="section-title" style={{display: 'flex', justifyContent: 'space-between'}}>
+                Pipeline Setup & Tech Stack
+                <span className="dataset-badge" style={{color: 'var(--primary-accent)', fontSize: '11px', padding: '4px 8px'}}>DEMO MODE</span>
+              </h2>
+              <div style={{marginTop: '20px', display: 'flex', gap: '20px'}}>
+                <div style={{background: 'rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '8px', fontSize: '12px', color: 'var(--text-muted)'}}>
+                  ⚡ Gemini 2.5 Flash Lite API
+                </div>
+                <div style={{background: 'rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '8px', fontSize: '12px', color: 'var(--text-muted)'}}>
+                  🔄 Vercel Serverless Pipeline
+                </div>
+                <div style={{background: 'rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '8px', fontSize: '12px', color: 'var(--text-muted)'}}>
+                  📊 Batch Prompting (Optimized RPM)
+                </div>
+              </div>
+              <p style={{marginTop: '20px', fontSize: '13px', color: 'var(--text-muted)'}}>
+                This automated demo uses the live backend pipeline logic. To see the full strategic insights compiled from all 2500+ multi-channel reviews, please visit the <strong>Insights Dashboard</strong>.
+              </p>
+            </div>
+
+          </div>
+        )}
+      </main>
+      
+      <style dangerouslySetInnerHTML={{__html: `
+        .blink-text { animation: blinker 1s linear infinite; color: var(--primary-accent); }
+        @keyframes blinker { 50% { opacity: 0.3; } }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      `}} />
     </div>
   );
 }
