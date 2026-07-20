@@ -34,7 +34,6 @@ const COMMENTS_NEG = ["Too expensive.", "Delivery was late.", "Poor quality.", "
 const COMMENTS_NEU = ["It's okay.", "Decent app.", "Works fine most of the time.", "Average experience.", "Nothing special.", "Needs some improvements.", "UI is a bit cluttered.", "Delivery is okay.", "Prices are normal.", "Can be better.", "Just average.", "Okay for basics.", "Has some bugs.", "Not bad, not great.", "Standard quick commerce."];
 
 const SOURCES = ['APP STORE', 'GOOGLE PLAY', 'REDDIT', 'TWITTER/X'];
-const SENTIMENTS = ['POSITIVE', 'NEGATIVE', 'NEUTRAL'];
 const TAGS = ['DELIVERY', 'ONBOARDING', 'TRUST', 'QUALITY', 'CONVENIENCE', 'PRICING', 'HABIT', 'DISCOVERY', 'REPEAT PURCHASE', 'VARIETY'];
 
 function seededRandom(seed: number) {
@@ -42,8 +41,17 @@ function seededRandom(seed: number) {
   return x - Math.floor(x);
 }
 
-function generateReview(id: number) {
-  const sentiment = SENTIMENTS[Math.floor(seededRandom(id) * SENTIMENTS.length)];
+const EXACT_SENTIMENTS: string[] = [];
+for (let i = 0; i < 1456; i++) EXACT_SENTIMENTS.push('POSITIVE');
+for (let i = 0; i < 1146; i++) EXACT_SENTIMENTS.push('NEGATIVE');
+for (let i = 0; i < 388; i++) EXACT_SENTIMENTS.push('NEUTRAL');
+
+for (let i = EXACT_SENTIMENTS.length - 1; i > 0; i--) {
+  const j = Math.floor(seededRandom(i) * (i + 1));
+  [EXACT_SENTIMENTS[i], EXACT_SENTIMENTS[j]] = [EXACT_SENTIMENTS[j], EXACT_SENTIMENTS[i]];
+}
+
+function generateReview(id: number, sentiment: string) {
   let content = "";
   let rating = 3;
   if (sentiment === 'POSITIVE') {
@@ -78,7 +86,7 @@ function generateReview(id: number) {
 
 const ALL_REVIEWS = Array.from({ length: 3000 }, (_, i) => {
   if (i < BASE_REVIEWS.length) return BASE_REVIEWS[i];
-  return generateReview(i + 1);
+  return generateReview(i + 1, EXACT_SENTIMENTS[i - BASE_REVIEWS.length]);
 });
 
 export default function Home() {
@@ -102,7 +110,10 @@ export default function Home() {
 
   const sortedReviews = [...filteredReviews].sort((a, b) => {
     if (sortOrder === "Newest First") return b.id - a.id;
-    return a.id - b.id;
+    if (sortOrder === "Oldest First") return a.id - b.id;
+    if (sortOrder === "Rating: High-Low") return b.rating - a.rating;
+    if (sortOrder === "Rating: Low-High") return a.rating - b.rating;
+    return 0;
   });
 
   const totalReviews = sortedReviews.length;
@@ -395,6 +406,8 @@ export default function Home() {
               <select className="filter-select" value={sortOrder} onChange={(e) => { setSortOrder(e.target.value); setCurrentPage(1); }}>
                 <option>Newest First</option>
                 <option>Oldest First</option>
+                <option>Rating: High-Low</option>
+                <option>Rating: Low-High</option>
               </select>
             </div>
 
