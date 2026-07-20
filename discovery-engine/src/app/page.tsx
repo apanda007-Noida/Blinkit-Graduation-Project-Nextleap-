@@ -169,9 +169,12 @@ export default function Home() {
       {/* SIDEBAR */}
       <aside className="sidebar">
         <div className="sidebar-header">
-          <div className="logo-box">blinkit</div>
-          <div>
-            <div className="brand-name">Discovery Engine</div>
+          <div className="logo-box">
+            <span style={{ color: '#000000' }}>blink</span><span style={{ color: '#10b981' }}>it</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div className="brand-name">Blinkit</div>
+            <div className="brand-sub">DISCOVERY ENGINE</div>
           </div>
         </div>
         
