@@ -14,17 +14,6 @@ const SAMPLE = {
   quickCommerce: `X post: "quick commerce apps are just faster kirana stores in my head, I don't associate them with anything beyond that"`
 };
 
-const RESEARCH_QUESTIONS = [
-  "Why do users repeatedly buy from the same categories?",
-  "What prevents users from exploring new categories?",
-  "How do users discover products today?",
-  "What role do habits play in shopping behavior?",
-  "What information do users need before trying a new category?",
-  "What frustrations emerge repeatedly?",
-  "Which user segments are more likely to experiment?",
-  "What unmet needs emerge consistently across discussions?"
-];
-
 export default function Home() {
   const [inputs, setInputs] = useState({
     appStore: "",
@@ -40,10 +29,6 @@ export default function Home() {
   const [status, setStatus] = useState("");
   const [results, setResults] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
-  
-  // Hybrid Fallback State
-  const [fallbackMode, setFallbackMode] = useState(false);
-  const [aiJson, setAiJson] = useState("");
 
   useEffect(() => {
     try {
@@ -59,7 +44,6 @@ export default function Home() {
   const loadSample = () => {
     setInputs(SAMPLE);
     setStatus("Sample data loaded.");
-    setFallbackMode(false);
   };
 
   const clearInputs = () => {
@@ -68,8 +52,6 @@ export default function Home() {
       socialMedia: "", productReviews: "", quickCommerce: ""
     });
     setResults(null);
-    setFallbackMode(false);
-    setAiJson("");
     setStatus("Inputs cleared.");
   };
 
@@ -82,7 +64,6 @@ export default function Home() {
 
     setLoading(true);
     setStatus("Reading sources and clustering themes using Gemini AI...");
-    setFallbackMode(false);
     
     try {
       const res = await fetch("/api/analyze", {
@@ -94,111 +75,35 @@ export default function Home() {
       const data = await res.json();
       
       if (data.error) {
-        // If the API returns a quota error, trigger Fallback Mode!
-        if (data.error.includes("429") || data.error.includes("limit: 0")) {
-          setFallbackMode(true);
-          setStatus(`⚠️ API Quota Exceeded (limit: 0). Falling back to Zero-Cost Manual Mode!`);
-        } else {
-          setFallbackMode(true);
-          setStatus(`⚠️ API Failed. Switched to Fallback Mode. Error: ${data.error.substring(0, 50)}...`);
-        }
+        setStatus(`Analysis Failed: ${JSON.stringify(data)}`);
         setResults(null);
       } else {
         setResults(data);
         setStatus(`Analysis complete — ${data.themes?.length || 0} themes found.`);
-        saveToHistory(data);
+        
+        // Save to history
+        const newHistoryItem = {
+          id: Date.now(),
+          date: new Date().toLocaleString(),
+          title: data.themes?.[0]?.title || "Analysis Run",
+          data
+        };
+        const updatedHistory = [newHistoryItem, ...history].slice(0, 10);
+        setHistory(updatedHistory);
+        localStorage.setItem("blinkit_research_history", JSON.stringify(updatedHistory));
       }
     } catch (error: any) {
-      setFallbackMode(true);
-      setStatus("⚠️ Network error hitting the API. Switched to Fallback Mode.");
+      setStatus("Something went wrong processing the analysis.");
       setResults(null);
     }
     
     setLoading(false);
   };
 
-  const saveToHistory = (data: any) => {
-    const newHistoryItem = {
-      id: Date.now(),
-      date: new Date().toLocaleString(),
-      title: data.themes?.[0]?.title || "Analysis Run",
-      data
-    };
-    const updatedHistory = [newHistoryItem, ...history].slice(0, 10);
-    setHistory(updatedHistory);
-    localStorage.setItem("blinkit_research_history", JSON.stringify(updatedHistory));
-  };
-
   const loadHistoryItem = (item: any) => {
     setResults(item.data);
     setStatus(`Loaded previous analysis: ${item.title}`);
     window.scrollTo({ top: document.body.scrollHeight / 2, behavior: 'smooth' });
-  };
-
-  // --- FALLBACK LOGIC ---
-  const generatePrompt = () => {
-    const promptText = `You are a growth-analytics engine for a Product Manager researching why quick-commerce users (Blinkit) don't buy from new categories.
-You will be given raw, unstructured user feedback from several sources.
-Your job:
-1. Identify 4-7 recurring THEMES that explain repeat-category shopping behavior and barriers to category exploration. Ground every theme only in patterns actually present in the provided text.
-2. Direct answers to each of the 8 research questions based only on the evidence.
-3. List 3-5 validation_flags to check in follow-up 1:1 user interviews.
-
-The 8 research questions, in order, are:
-${RESEARCH_QUESTIONS.map((q,i)=>`${i+1}. ${q}`).join('\n')}
-
-RAW FEEDBACK:
-APP STORE REVIEWS:\n${inputs.appStore || '(none provided)'}
-PLAY STORE REVIEWS:\n${inputs.playStore || '(none provided)'}
-REDDIT DISCUSSIONS:\n${inputs.reddit || '(none provided)'}
-COMMUNITY FORUMS:\n${inputs.communityForums || '(none provided)'}
-SOCIAL MEDIA CONVERSATIONS:\n${inputs.socialMedia || '(none provided)'}
-PRODUCT REVIEWS:\n${inputs.productReviews || '(none provided)'}
-QUICK-COMMERCE DISCUSSIONS:\n${inputs.quickCommerce || '(none provided)'}
-
-CRITICAL INSTRUCTION: You MUST return ONLY a raw, valid JSON object and absolutely nothing else. Do not include markdown code blocks like \`\`\`json. The JSON must exactly match this structure:
-{
-  "themes": [
-    {
-      "title": "String",
-      "insight": "String",
-      "confidence": "High, Medium, or Low",
-      "paraphrased_example": "String",
-      "related_questions": [1, 2],
-      "segment": "String"
-    }
-  ],
-  "answers": [
-    {
-      "question": "String",
-      "answer": "String"
-    }
-  ],
-  "validation_flags": ["String", "String"]
-}`;
-
-    navigator.clipboard.writeText(promptText)
-      .then(() => setStatus("✅ Prompt copied to clipboard! Paste it into ChatGPT or Claude, then copy the JSON they return."))
-      .catch(() => setStatus("Error: Could not copy to clipboard. Please check browser permissions."));
-  };
-
-  const renderFallbackDashboard = () => {
-    if (!aiJson.trim()) {
-      setStatus("Error: Paste the JSON response from the AI first.");
-      return;
-    }
-    try {
-      const cleanJson = aiJson.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
-      const data = JSON.parse(cleanJson);
-      if (!data.themes || !data.answers) throw new Error("Invalid JSON structure.");
-      setResults(data);
-      setStatus(`✅ Dashboard rendered successfully from manual JSON — ${data.themes.length} themes found.`);
-      saveToHistory(data);
-      setFallbackMode(false);
-      window.scrollTo({ top: document.body.scrollHeight / 2, behavior: 'smooth' });
-    } catch (error: any) {
-      setStatus(`JSON Parsing Error: ${error.message}. Make sure you only pasted the JSON block.`);
-    }
   };
 
   return (
@@ -233,46 +138,17 @@ CRITICAL INSTRUCTION: You MUST return ONLY a raw, valid JSON object and absolute
       </div>
 
       <div className="toolbar">
-        <button onClick={runAnalysis} disabled={loading} style={{ background: 'var(--primary-accent)', color: 'black' }}>
+        <button onClick={runAnalysis} disabled={loading}>
           {loading ? 'Analyzing...' : 'Run Analysis'}
         </button>
         <button className="secondary" onClick={loadSample} disabled={loading}>Load Sample Batch</button>
         <button className="secondary" onClick={clearInputs} disabled={loading}>Clear Inputs</button>
+        <span className="status-msg">{status}</span>
       </div>
-
-      <div style={{ marginTop: '10px', textAlign: 'center' }}>
-         <span className="status-msg" style={{ color: status.includes('⚠️') || status.includes('Error') ? '#ff6b6b' : status.includes('✅') ? '#4ade80' : 'var(--text-secondary)' }}>
-           {status}
-         </span>
-      </div>
-
-      {/* GRACEFUL DEGRADATION UI */}
-      {fallbackMode && (
-        <div style={{ marginTop: '30px', padding: '20px', background: 'rgba(255, 107, 107, 0.1)', border: '1px solid #ff6b6b', borderRadius: '8px' }}>
-          <h2 style={{ color: '#ff6b6b', marginTop: 0, marginBottom: '15px' }}>Fallback Mode Activated</h2>
-          <p style={{ marginBottom: '20px' }}>Your API key failed to process the request. You can instantly bypass this by copying the prompt to a free-tier AI chat (like ChatGPT or Claude) and pasting the JSON back here!</p>
-          
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-            <button onClick={generatePrompt} style={{ background: '#ff6b6b', color: 'black', fontWeight: 'bold' }}>1. COPY PROMPT TO CLIPBOARD</button>
-          </div>
-
-          <div className="field-container" style={{ marginBottom: '20px' }}>
-            <label className="field-label" style={{ color: '#ff6b6b' }}>2. Paste AI JSON Response Here</label>
-            <textarea 
-              style={{ minHeight: '150px', border: '1px solid #ff6b6b' }}
-              value={aiJson}
-              onChange={e => setAiJson(e.target.value)}
-              placeholder="Paste the raw JSON response from ChatGPT or Claude here..."
-            />
-          </div>
-
-          <button onClick={renderFallbackDashboard} style={{ background: '#ff6b6b', color: 'black', fontWeight: 'bold' }}>3. RENDER DASHBOARD</button>
-        </div>
-      )}
 
       <hr className="divider" />
 
-      {!results && !fallbackMode && (
+      {!results && (
         <div className="empty-state">
           No analysis yet. Paste a batch of feedback above and run the engine.
         </div>
@@ -284,26 +160,26 @@ CRITICAL INSTRUCTION: You MUST return ONLY a raw, valid JSON object and absolute
           <div className="section-title">Answers to the Research Brief</div>
           <div className="answers-list">
             {results.answers?.map((qa: any, idx: number) => (
-               <div key={idx} className="qa-card" style={{ background: 'var(--bg-surface)', padding: '20px', borderRadius: '8px', marginBottom: '15px', border: '1px solid var(--border-color)' }}>
-                <div className="qa-q" style={{ fontWeight: 'bold', marginBottom: '10px', color: 'var(--text-primary)' }}>{idx + 1}. {qa.question}</div>
-                <div className="qa-a" style={{ color: 'var(--text-secondary)' }}>{qa.answer}</div>
+              <div key={idx} className="qa-card">
+                <div className="qa-q">{idx + 1}. {qa.question}</div>
+                <div className="qa-a">{qa.answer}</div>
               </div>
             ))}
           </div>
 
-          <div className="section-title" style={{ marginTop: '40px' }}>Themes Surfaced</div>
-          <div className="themes-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-             {results.themes?.map((t: any, idx: number) => (
-              <div key={idx} className="ticket" style={{ background: 'var(--bg-surface)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                <div className="tt-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-                  <div className="tt-title" style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--text-primary)' }}>{t.title}</div>
-                  <div style={{ background: t.confidence?.toLowerCase() === 'high' ? '#166534' : t.confidence?.toLowerCase() === 'low' ? '#991b1b' : '#854d0e', padding: '4px 10px', borderRadius: '999px', fontSize: '0.8rem', fontWeight: 'bold', color: 'white' }}>
+          <div className="section-title">Themes Surfaced</div>
+          <div className="themes-grid">
+            {results.themes?.map((t: any, idx: number) => (
+              <div key={idx} className="ticket">
+                <div className="tt-head">
+                  <div className="tt-title">{t.title}</div>
+                  <div className={`tt-conf conf-${t.confidence?.toLowerCase() || 'medium'}`}>
                     {t.confidence}
                   </div>
                 </div>
-                <div className="tt-insight" style={{ marginBottom: '15px', color: 'var(--text-secondary)' }}>{t.insight}</div>
-                <div className="tt-quote" style={{ borderLeft: '3px solid var(--primary-accent)', paddingLeft: '15px', fontStyle: 'italic', color: 'var(--text-primary)', marginBottom: '15px' }}>"{t.paraphrased_example}"</div>
-                <div className="tt-meta" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                <div className="tt-insight">{t.insight}</div>
+                <div className="tt-quote">"{t.paraphrased_example}"</div>
+                <div className="tt-meta">
                   <span>Relates to Q{(t.related_questions || []).join(', Q')}</span>
                   <span>{t.segment}</span>
                 </div>
@@ -312,13 +188,14 @@ CRITICAL INSTRUCTION: You MUST return ONLY a raw, valid JSON object and absolute
           </div>
 
           {results.validation_flags && results.validation_flags.length > 0 && (
-            <div className="flags-container" style={{ marginTop: '40px' }}>
-               <div className="section-title">Validate in Part 2 Interviews</div>
-               <ul style={{ paddingLeft: '20px', color: 'var(--text-secondary)' }}>
-                {results.validation_flags.map((flag: string, idx: number) => (
-                  <li key={idx} style={{ marginBottom: '10px', lineHeight: '1.5' }}>{flag}</li>
-                ))}
-              </ul>
+            <div className="flags-container">
+              <div className="section-title">Validate in Part 2 Interviews</div>
+              {results.validation_flags.map((flag: string, idx: number) => (
+                <div key={idx} className="flag-item">
+                  <span className="flag-mark">▸</span>
+                  <span>{flag}</span>
+                </div>
+              ))}
             </div>
           )}
         </div>
