@@ -678,7 +678,7 @@ export default function Home() {
               <div style={{ border: '1px solid rgba(247, 208, 70, 0.3)', background: 'rgba(247, 208, 70, 0.05)', padding: '16px', borderRadius: '8px', marginTop: '32px', fontSize: '12px', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                 <span style={{ fontSize: '16px' }}>⚠️</span> 
                 <div>
-                  <strong style={{color: '#F7D046'}}>Demo Dataset Disclaimer:</strong> This pipeline uses a 50-review demo sample. To see the full strategic insights compiled from all 2500+ multi-channel reviews, please visit the <strong>Insights Dashboard</strong>.
+                  <strong style={{color: '#F7D046'}}>Demo Dataset Disclaimer:</strong> This pipeline uses a 50-review demo sample. To see the full strategic insights compiled from all 3000 multi-channel reviews, please visit the <strong>Insights Dashboard</strong>.
                 </div>
               </div>
             </div>
