@@ -18,6 +18,22 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [activeHyp, setActiveHyp] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, title: '', value: '', color: '' });
+
+  const handleMouseMove = (e: React.MouseEvent, title: string, value: string, color: string) => {
+    setTooltip({
+      visible: true,
+      x: e.clientX,
+      y: e.clientY,
+      title,
+      value,
+      color
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setTooltip(prev => ({ ...prev, visible: false }));
+  };
 
   // Sandbox state
   const [sandboxText, setSandboxText] = useState("");
@@ -103,15 +119,19 @@ export default function Home() {
             <div className="metrics-grid">
               <div className="card">
                 <div className="metric-header">Sentiment Distribution <span>🎗️</span></div>
-                {/* Simulated CSS Doughnut Chart using Conic Gradient */}
+                {/* SVG Donut Chart for Sentiment */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '140px' }}>
-                  <div style={{
-                    width: '120px', height: '120px', borderRadius: '50%',
-                    background: 'conic-gradient(#10b981 0% 48%, #ef4444 48% 87%, #3b82f6 87% 100%)',
-                    position: 'relative'
-                  }}>
-                    <div style={{ position: 'absolute', top: '25px', left: '25px', right: '25px', bottom: '25px', background: 'var(--bg-card)', borderRadius: '50%' }}></div>
-                  </div>
+                  <svg width="120" height="120" viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)', overflow: 'visible' }}>
+                    <circle cx="50" cy="50" r="31.831" fill="transparent" stroke="#10b981" strokeWidth="20" strokeDasharray="97.34 200" strokeDashoffset="0"
+                      onMouseMove={(e) => handleMouseMove(e, 'Positive', '1,460', '#10b981')} onMouseLeave={handleMouseLeave}
+                      style={{ cursor: 'pointer', transition: 'stroke-width 0.2s' }} />
+                    <circle cx="50" cy="50" r="31.831" fill="transparent" stroke="#ef4444" strokeWidth="20" strokeDasharray="76.66 200" strokeDashoffset="-97.34"
+                      onMouseMove={(e) => handleMouseMove(e, 'Negative', '1,150', '#ef4444')} onMouseLeave={handleMouseLeave}
+                      style={{ cursor: 'pointer', transition: 'stroke-width 0.2s' }} />
+                    <circle cx="50" cy="50" r="31.831" fill="transparent" stroke="#3b82f6" strokeWidth="20" strokeDasharray="26.00 200" strokeDashoffset="-174.00"
+                      onMouseMove={(e) => handleMouseMove(e, 'Neutral', '390', '#3b82f6')} onMouseLeave={handleMouseLeave}
+                      style={{ cursor: 'pointer', transition: 'stroke-width 0.2s' }} />
+                  </svg>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginTop: '20px', color: 'var(--text-muted)' }}>
                   <span><span style={{color:'#10b981'}}>●</span> Positive (1460)</span>
@@ -122,22 +142,22 @@ export default function Home() {
 
               <div className="card">
                 <div className="metric-header">Feedback Sources <span>👥</span></div>
-                <div className="bar-row">
+                <div className="bar-row" onMouseMove={(e) => handleMouseMove(e, 'Google Play', '1,900', '#f7d046')} onMouseLeave={handleMouseLeave}>
                   <div className="bar-label">Google Play</div>
                   <div className="bar-track"><div className="bar-fill" style={{width: '63%', background: '#f7d046'}}></div></div>
                   <div className="bar-label" style={{textAlign:'left', width:'40px'}}>1900</div>
                 </div>
-                <div className="bar-row">
+                <div className="bar-row" onMouseMove={(e) => handleMouseMove(e, 'App Store', '500', '#3b82f6')} onMouseLeave={handleMouseLeave}>
                   <div className="bar-label">App Store</div>
                   <div className="bar-track"><div className="bar-fill" style={{width: '17%', background: '#3b82f6'}}></div></div>
                   <div className="bar-label" style={{textAlign:'left', width:'40px'}}>500</div>
                 </div>
-                <div className="bar-row">
+                <div className="bar-row" onMouseMove={(e) => handleMouseMove(e, 'Reddit', '350', '#ef4444')} onMouseLeave={handleMouseLeave}>
                   <div className="bar-label">Reddit</div>
                   <div className="bar-track"><div className="bar-fill" style={{width: '12%', background: '#ef4444'}}></div></div>
                   <div className="bar-label" style={{textAlign:'left', width:'40px'}}>350</div>
                 </div>
-                <div className="bar-row">
+                <div className="bar-row" onMouseMove={(e) => handleMouseMove(e, 'Twitter/X', '250', '#10b981')} onMouseLeave={handleMouseLeave}>
                   <div className="bar-label">Twitter/X</div>
                   <div className="bar-track"><div className="bar-fill" style={{width: '8%', background: '#10b981'}}></div></div>
                   <div className="bar-label" style={{textAlign:'left', width:'40px'}}>250</div>
@@ -155,14 +175,14 @@ export default function Home() {
                     <span>200</span>
                     <span>0</span>
                   </div>
-                  <div className="v-bar-col"><div className="v-bar-fill" style={{height: '3%'}}></div><div className="v-bar-label">REPEAT PURCHASE</div></div>
-                  <div className="v-bar-col"><div className="v-bar-fill" style={{height: '10%'}}></div><div className="v-bar-label">DISCOVERY</div></div>
-                  <div className="v-bar-col"><div className="v-bar-fill" style={{height: '32%'}}></div><div className="v-bar-label">PRICING</div></div>
-                  <div className="v-bar-col"><div className="v-bar-fill" style={{height: '83%'}}></div><div className="v-bar-label">DELIVERY</div></div>
-                  <div className="v-bar-col"><div className="v-bar-fill" style={{height: '40%'}}></div><div className="v-bar-label">QUALITY</div></div>
-                  <div className="v-bar-col"><div className="v-bar-fill" style={{height: '68%'}}></div><div className="v-bar-label">TRUST</div></div>
-                  <div className="v-bar-col"><div className="v-bar-fill" style={{height: '5%'}}></div><div className="v-bar-label">VARIETY</div></div>
-                  <div className="v-bar-col"><div className="v-bar-fill" style={{height: '10%'}}></div><div className="v-bar-label">HABIT</div></div>
+                  <div className="v-bar-col" onMouseMove={(e) => handleMouseMove(e, 'Repeat Purchase', '30', '#f7d046')} onMouseLeave={handleMouseLeave}><div className="v-bar-fill" style={{height: '3%'}}></div><div className="v-bar-label">REPEAT PURCHASE</div></div>
+                  <div className="v-bar-col" onMouseMove={(e) => handleMouseMove(e, 'Discovery', '100', '#f7d046')} onMouseLeave={handleMouseLeave}><div className="v-bar-fill" style={{height: '10%'}}></div><div className="v-bar-label">DISCOVERY</div></div>
+                  <div className="v-bar-col" onMouseMove={(e) => handleMouseMove(e, 'Pricing', '320', '#f7d046')} onMouseLeave={handleMouseLeave}><div className="v-bar-fill" style={{height: '32%'}}></div><div className="v-bar-label">PRICING</div></div>
+                  <div className="v-bar-col" onMouseMove={(e) => handleMouseMove(e, 'Delivery', '830', '#f7d046')} onMouseLeave={handleMouseLeave}><div className="v-bar-fill" style={{height: '83%'}}></div><div className="v-bar-label">DELIVERY</div></div>
+                  <div className="v-bar-col" onMouseMove={(e) => handleMouseMove(e, 'Quality', '400', '#f7d046')} onMouseLeave={handleMouseLeave}><div className="v-bar-fill" style={{height: '40%'}}></div><div className="v-bar-label">QUALITY</div></div>
+                  <div className="v-bar-col" onMouseMove={(e) => handleMouseMove(e, 'Trust', '680', '#f7d046')} onMouseLeave={handleMouseLeave}><div className="v-bar-fill" style={{height: '68%'}}></div><div className="v-bar-label">TRUST</div></div>
+                  <div className="v-bar-col" onMouseMove={(e) => handleMouseMove(e, 'Variety', '50', '#f7d046')} onMouseLeave={handleMouseLeave}><div className="v-bar-fill" style={{height: '5%'}}></div><div className="v-bar-label">VARIETY</div></div>
+                  <div className="v-bar-col" onMouseMove={(e) => handleMouseMove(e, 'Habit', '100', '#f7d046')} onMouseLeave={handleMouseLeave}><div className="v-bar-fill" style={{height: '10%'}}></div><div className="v-bar-label">HABIT</div></div>
                 </div>
               </div>
             </div>
@@ -460,6 +480,28 @@ export default function Home() {
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
       `}} />
+      
+      {tooltip.visible && (
+        <div style={{
+          position: 'fixed',
+          top: tooltip.y + 15,
+          left: tooltip.x + 15,
+          background: '#1f2937',
+          border: '1px solid var(--border-color)',
+          padding: '8px 12px',
+          borderRadius: '6px',
+          pointerEvents: 'none',
+          zIndex: 9999,
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+          minWidth: '100px'
+        }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>{tooltip.title}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>
+            <div style={{ width: '10px', height: '10px', backgroundColor: tooltip.color, borderRadius: '2px' }}></div>
+            {tooltip.value}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
