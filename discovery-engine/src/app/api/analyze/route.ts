@@ -42,7 +42,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No input provided." }, { status: 400 });
     }
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const fallbackModels = ['gemini-3.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+    let lastError: any = null;
+    let resultData: any = null;
     
     const userContent = `
 APP STORE REVIEWS:\n${appStore || '(none provided)'}
@@ -54,57 +56,72 @@ PRODUCT REVIEWS:\n${productReviews || '(none provided)'}
 QUICK-COMMERCE DISCUSSIONS:\n${quickCommerce || '(none provided)'}
 `;
 
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash-lite',
-      systemInstruction: systemInstruction,
-      generationConfig: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: SchemaType.OBJECT,
-          properties: {
-            themes: {
-              type: SchemaType.ARRAY,
-              items: {
-                type: SchemaType.OBJECT,
-                properties: {
-                  title: { type: SchemaType.STRING },
-                  insight: { type: SchemaType.STRING },
-                  confidence: { type: SchemaType.STRING },
-                  paraphrased_example: { type: SchemaType.STRING },
-                  related_questions: { type: SchemaType.ARRAY, items: { type: SchemaType.INTEGER } },
-                  segment: { type: SchemaType.STRING }
+    for (const modelName of fallbackModels) {
+      try {
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        const model = genAI.getGenerativeModel({
+          model: modelName,
+          systemInstruction: systemInstruction,
+          generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: SchemaType.OBJECT,
+              properties: {
+                themes: {
+                  type: SchemaType.ARRAY,
+                  items: {
+                    type: SchemaType.OBJECT,
+                    properties: {
+                      title: { type: SchemaType.STRING },
+                      insight: { type: SchemaType.STRING },
+                      confidence: { type: SchemaType.STRING },
+                      paraphrased_example: { type: SchemaType.STRING },
+                      related_questions: { type: SchemaType.ARRAY, items: { type: SchemaType.INTEGER } },
+                      segment: { type: SchemaType.STRING }
+                    },
+                    required: ["title", "insight", "confidence", "paraphrased_example", "related_questions", "segment"]
+                  }
                 },
-                required: ["title", "insight", "confidence", "paraphrased_example", "related_questions", "segment"]
-              }
-            },
-            answers: {
-              type: SchemaType.ARRAY,
-              items: {
-                type: SchemaType.OBJECT,
-                properties: {
-                  question: { type: SchemaType.STRING },
-                  answer: { type: SchemaType.STRING }
+                answers: {
+                  type: SchemaType.ARRAY,
+                  items: {
+                    type: SchemaType.OBJECT,
+                    properties: {
+                      question: { type: SchemaType.STRING },
+                      answer: { type: SchemaType.STRING }
+                    },
+                    required: ["question", "answer"]
+                  }
                 },
-                required: ["question", "answer"]
-              }
-            },
-            validation_flags: {
-              type: SchemaType.ARRAY,
-              items: { type: SchemaType.STRING }
+                validation_flags: {
+                  type: SchemaType.ARRAY,
+                  items: { type: SchemaType.STRING }
+                }
+              },
+              required: ["themes", "answers", "validation_flags"]
             }
-          },
-          required: ["themes", "answers", "validation_flags"]
-        }
-      }
-    });
+          }
+        });
 
-    const result = await model.generateContent(userContent);
-    const text = result.response.text();
+        const result = await model.generateContent(userContent);
+        const text = result.response.text();
+        
+        if (!text) throw new Error("No response generated.");
+        
+        resultData = JSON.parse(text);
+        break; // Success! Break out of the fallback loop.
+      } catch (err: any) {
+        console.error(`Model ${modelName} failed:`, err.message);
+        lastError = err;
+        // Continue to the next model in the fallback list
+      }
+    }
+
+    if (!resultData) {
+      throw lastError || new Error("All fallback models failed.");
+    }
     
-    if (!text) throw new Error("No response generated.");
-    
-    const data = JSON.parse(text);
-    return NextResponse.json(data);
+    return NextResponse.json(resultData);
     
   } catch (error: any) {
     console.error("Analyze API Error:", error);
