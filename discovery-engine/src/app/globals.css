@@ -687,6 +687,7 @@ h1, h2, h3, h4, .outfit {
   color: var(--text-primary);
   font-size: 13px;
   outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .filter-select {
@@ -698,7 +699,13 @@ h1, h2, h3, h4, .outfit {
   font-size: 13px;
   outline: none;
   cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
   min-width: 140px;
+}
+
+.search-input:focus, .filter-select:focus, .sandbox-textarea:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
 }
 
 .filter-select option {

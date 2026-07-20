@@ -27,18 +27,89 @@ const BASE_REVIEWS = [
   { id: 10, source: 'GOOGLE PLAY', author: 'Amit Patel', content: 'Huge variety of snacks available now, loving the new categories.', tags: ['VARIETY'], sentiment: 'POSITIVE', rating: 4, date: '7/12/2026' }
 ];
 
+const FIRST_NAMES = ["Rahul", "Amit", "Priya", "Sneha", "Vikram", "Neha", "Rohit", "Anjali", "Suresh", "Karan", "Pooja", "Arjun", "Aditi", "Ravi", "Megha"];
+const LAST_NAMES = ["K.", "Patel", "Sharma", "Singh", "Gupta", "Verma", "Reddy", "Kumar", "Das", "Jain", "B.", "Mishra", "Nair", "Rao", "Iyer"];
+const COMMENTS_POS = ["Awesome service!", "Really fast delivery.", "Saved my day.", "Good variety.", "Easy to use.", "Love the app.", "Great experience.", "Highly recommend.", "Always on time.", "Best app for quick needs.", "Super convenient.", "Never disappoints.", "Perfect for urgent items.", "Quality is amazing.", "Very smooth experience."];
+const COMMENTS_NEG = ["Too expensive.", "Delivery was late.", "Poor quality.", "Customer support is unhelpful.", "App crashed.", "Items missing.", "Wrong item delivered.", "Refund takes forever.", "Bad packaging.", "Prices are higher than market.", "Terrible experience.", "Not reliable.", "Worst service.", "Driver was rude.", "App is very slow."];
+const COMMENTS_NEU = ["It's okay.", "Decent app.", "Works fine most of the time.", "Average experience.", "Nothing special.", "Needs some improvements.", "UI is a bit cluttered.", "Delivery is okay.", "Prices are normal.", "Can be better.", "Just average.", "Okay for basics.", "Has some bugs.", "Not bad, not great.", "Standard quick commerce."];
+
+const SOURCES = ['APP STORE', 'GOOGLE PLAY', 'REDDIT', 'TWITTER/X'];
+const SENTIMENTS = ['POSITIVE', 'NEGATIVE', 'NEUTRAL'];
+const TAGS = ['DELIVERY', 'ONBOARDING', 'TRUST', 'QUALITY', 'CONVENIENCE', 'PRICING', 'HABIT', 'DISCOVERY', 'REPEAT PURCHASE', 'VARIETY'];
+
+function seededRandom(seed: number) {
+  const x = Math.sin(seed++) * 10000;
+  return x - Math.floor(x);
+}
+
+function generateReview(id: number) {
+  const sentiment = SENTIMENTS[Math.floor(seededRandom(id) * SENTIMENTS.length)];
+  let content = "";
+  let rating = 3;
+  if (sentiment === 'POSITIVE') {
+    content = COMMENTS_POS[Math.floor(seededRandom(id * 2) * COMMENTS_POS.length)];
+    rating = Math.floor(seededRandom(id * 3) * 2) + 4;
+  } else if (sentiment === 'NEGATIVE') {
+    content = COMMENTS_NEG[Math.floor(seededRandom(id * 2) * COMMENTS_NEG.length)];
+    rating = Math.floor(seededRandom(id * 3) * 2) + 1;
+  } else {
+    content = COMMENTS_NEU[Math.floor(seededRandom(id * 2) * COMMENTS_NEU.length)];
+    rating = 3;
+  }
+  
+  const numTags = Math.floor(seededRandom(id * 4) * 2) + 1;
+  const reviewTags = [];
+  for(let i=0; i<numTags; i++) {
+    reviewTags.push(TAGS[Math.floor(seededRandom(id * 5 + i) * TAGS.length)]);
+  }
+  const uniqueTags = Array.from(new Set(reviewTags));
+
+  return {
+    id,
+    source: SOURCES[Math.floor(seededRandom(id * 6) * SOURCES.length)],
+    author: `${FIRST_NAMES[Math.floor(seededRandom(id * 7) * FIRST_NAMES.length)]} ${LAST_NAMES[Math.floor(seededRandom(id * 8) * LAST_NAMES.length)]}`,
+    content,
+    tags: uniqueTags,
+    sentiment,
+    rating,
+    date: `7/${Math.floor(seededRandom(id * 9) * 15) + 1}/2026`
+  };
+}
+
 const ALL_REVIEWS = Array.from({ length: 3000 }, (_, i) => {
-  const base = BASE_REVIEWS[i % BASE_REVIEWS.length];
-  return { ...base, id: i + 1 };
+  if (i < BASE_REVIEWS.length) return BASE_REVIEWS[i];
+  return generateReview(i + 1);
 });
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [activeHyp, setActiveHyp] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterSentiment, setFilterSentiment] = useState("All Sentiments");
+  const [filterTag, setFilterTag] = useState("All Category Tags");
+  const [filterSource, setFilterSource] = useState("All Sources");
+  const [sortOrder, setSortOrder] = useState("Newest First");
   const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, title: '', value: '', color: '' });
   
-  const displayedReviews = ALL_REVIEWS.slice((currentPage - 1) * 10, currentPage * 10);
+  const filteredReviews = ALL_REVIEWS.filter(rev => {
+    if (searchQuery && !rev.content.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (filterSentiment !== "All Sentiments" && rev.sentiment !== filterSentiment.toUpperCase()) return false;
+    if (filterTag !== "All Category Tags" && !rev.tags.includes(filterTag.toUpperCase())) return false;
+    if (filterSource !== "All Sources" && rev.source !== filterSource.toUpperCase()) return false;
+    return true;
+  });
+
+  const sortedReviews = [...filteredReviews].sort((a, b) => {
+    if (sortOrder === "Newest First") return b.id - a.id;
+    return a.id - b.id;
+  });
+
+  const totalReviews = sortedReviews.length;
+  const totalPages = Math.max(1, Math.ceil(totalReviews / 10));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  
+  const displayedReviews = sortedReviews.slice((safeCurrentPage - 1) * 10, safeCurrentPage * 10);
 
   const handleMouseMove = (e: React.MouseEvent, title: string, value: string, color: string) => {
     setTooltip({
@@ -296,14 +367,14 @@ export default function Home() {
             <p className="section-sub">Filter, search, and verify individual customer reviews mapped by the classifier.</p>
 
             <div className="feedback-controls">
-              <input type="text" className="search-input" placeholder="Search Blinkit customer reviews (e.g., refund, delivery)..." />
-              <select className="filter-select">
+              <input type="text" className="search-input" placeholder="Search Blinkit customer reviews (e.g., refund, delivery)..." value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }} />
+              <select className="filter-select" value={filterSentiment} onChange={(e) => { setFilterSentiment(e.target.value); setCurrentPage(1); }}>
                 <option>All Sentiments</option>
                 <option>Positive</option>
                 <option>Neutral</option>
                 <option>Negative</option>
               </select>
-              <select className="filter-select">
+              <select className="filter-select" value={filterTag} onChange={(e) => { setFilterTag(e.target.value); setCurrentPage(1); }}>
                 <option>All Category Tags</option>
                 <option>Delivery</option>
                 <option>Quality</option>
@@ -314,14 +385,14 @@ export default function Home() {
                 <option>Habit</option>
                 <option>Repeat Purchase</option>
               </select>
-              <select className="filter-select">
+              <select className="filter-select" value={filterSource} onChange={(e) => { setFilterSource(e.target.value); setCurrentPage(1); }}>
                 <option>All Sources</option>
                 <option>Google Play</option>
                 <option>App Store</option>
                 <option>Reddit</option>
                 <option>Twitter/X</option>
               </select>
-              <select className="filter-select">
+              <select className="filter-select" value={sortOrder} onChange={(e) => { setSortOrder(e.target.value); setCurrentPage(1); }}>
                 <option>Newest First</option>
                 <option>Oldest First</option>
               </select>
@@ -374,10 +445,10 @@ export default function Home() {
                 </tbody>
               </table>
               <div className="pagination-footer">
-                <div className="pagination-text">Showing {(currentPage - 1) * 10 + 1}-{Math.min(currentPage * 10, 3000)} of 3000 reviews</div>
+                <div className="pagination-text">Showing {totalReviews === 0 ? 0 : (safeCurrentPage - 1) * 10 + 1}-{Math.min(safeCurrentPage * 10, totalReviews)} of {totalReviews} reviews</div>
                 <div className="pagination-controls">
-                  <button className="page-btn" onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}><span>&lt;</span> Prev</button>
-                  <button className="page-btn" onClick={() => setCurrentPage(Math.min(300, currentPage + 1))}>Next <span>&gt;</span></button>
+                  <button className="page-btn" disabled={safeCurrentPage === 1} onClick={() => setCurrentPage(Math.max(1, safeCurrentPage - 1))}><span>&lt;</span> Prev</button>
+                  <button className="page-btn" disabled={safeCurrentPage === totalPages} onClick={() => setCurrentPage(Math.min(totalPages, safeCurrentPage + 1))}>Next <span>&gt;</span></button>
                 </div>
               </div>
             </div>
