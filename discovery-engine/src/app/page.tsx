@@ -94,7 +94,7 @@ export default function Home() {
               </div>
               <div className="dataset-badge">
                 <div className="dataset-label">Data Set Size</div>
-                <div className="dataset-value">2,601 reviews</div>
+                <div className="dataset-value">3,000 reviews</div>
               </div>
             </header>
 
@@ -226,6 +226,103 @@ export default function Home() {
                 <div className="segment-label">Key Items</div>
                 <div className="segment-val">Exotic sauces, imported chocolates, organic.</div>
               </div>
+            </div>
+
+            {/* Raw Feedback Explorer */}
+            <h2 className="section-title" style={{marginTop: '60px'}}>Raw Feedback Explorer</h2>
+            <p className="section-sub">Filter, search, and verify individual customer reviews mapped by the classifier.</p>
+
+            <div className="feedback-controls">
+              <input type="text" className="search-input" placeholder="Search Blinkit customer reviews (e.g., refund, delivery)..." />
+              <select className="filter-select">
+                <option>All Sentiments</option>
+                <option>Positive</option>
+                <option>Neutral</option>
+                <option>Negative</option>
+              </select>
+              <select className="filter-select">
+                <option>All Category Tags</option>
+                <option>Delivery</option>
+                <option>Quality</option>
+                <option>Trust</option>
+              </select>
+              <select className="filter-select">
+                <option>All Sources</option>
+                <option>App Store</option>
+                <option>Play Store</option>
+                <option>Reddit</option>
+              </select>
+              <select className="filter-select">
+                <option>Newest First</option>
+                <option>Oldest First</option>
+              </select>
+            </div>
+
+            <div className="feedback-table-container">
+              <table className="feedback-table">
+                <thead>
+                  <tr>
+                    <th style={{width: '60px'}}>ID</th>
+                    <th style={{width: '120px'}}>SOURCE</th>
+                    <th>FEEDBACK CONTENT</th>
+                    <th style={{width: '120px', textAlign: 'center'}}>SENTIMENT</th>
+                    <th style={{width: '120px', textAlign: 'center'}}>RATING</th>
+                    <th style={{width: '100px', textAlign: 'right'}}>DATE</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style={{color: 'var(--text-muted)'}}>#1</td>
+                    <td><div className="source-badge">APP<br/>STORE</div></td>
+                    <td>
+                      <div className="feedback-author">Mudit.</div>
+                      <div className="feedback-content">Please confirm to customer , where you deliver product & give service like home door step.</div>
+                      <div className="feedback-tags">
+                        <span className="f-tag">DELIVERY</span>
+                        <span className="f-tag">ONBOARDING</span>
+                      </div>
+                    </td>
+                    <td style={{textAlign: 'center'}}><span className="sentiment-badge neutral">NEUTRAL</span></td>
+                    <td style={{textAlign: 'center'}}>
+                      <span className="rating-stars">★★★★★</span>
+                    </td>
+                    <td className="feedback-date" style={{textAlign: 'right'}}>7/16/2026</td>
+                  </tr>
+                  <tr>
+                    <td style={{color: 'var(--text-muted)'}}>#2</td>
+                    <td><div className="source-badge">APP<br/>STORE</div></td>
+                    <td>
+                      <div className="feedback-author">Muthahar17</div>
+                      <div className="feedback-content">Hi blinkit team Previously I have been purchased one thing on the blinkit and I received the other item in that I have been shared the photos off the item through your app and they said like it is not refunded and I did not ask about the refund I just to replacement they but they are informing it is also not replaceable then what should I do with that then I just requested to call back from the executive but they are informing the same thing I don't know what should I do with that product the product still unusable how can we trust on that</div>
+                      <div className="feedback-tags">
+                        <span className="f-tag">TRUST</span>
+                        <span className="f-tag">QUALITY</span>
+                      </div>
+                    </td>
+                    <td style={{textAlign: 'center'}}><span className="sentiment-badge negative">NEGATIVE</span></td>
+                    <td style={{textAlign: 'center'}}>
+                      <span className="rating-stars">★<span className="rating-empty">★★★★</span></span>
+                    </td>
+                    <td className="feedback-date" style={{textAlign: 'right'}}>7/16/2026</td>
+                  </tr>
+                  <tr>
+                    <td style={{color: 'var(--text-muted)'}}>#3</td>
+                    <td><div className="source-badge">APP<br/>STORE</div></td>
+                    <td>
+                      <div className="feedback-author">Astitva Bhaduriya</div>
+                      <div className="feedback-content">Wow bro just order anything anytime</div>
+                      <div className="feedback-tags">
+                        <span className="f-tag">CONVENIENCE</span>
+                      </div>
+                    </td>
+                    <td style={{textAlign: 'center'}}><span className="sentiment-badge positive">POSITIVE</span></td>
+                    <td style={{textAlign: 'center'}}>
+                      <span className="rating-stars">★★★★★</span>
+                    </td>
+                    <td className="feedback-date" style={{textAlign: 'right'}}>7/16/2026</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
           </div>
