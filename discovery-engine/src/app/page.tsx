@@ -143,27 +143,27 @@ export default function Home() {
                   <div className="bar-label" style={{textAlign:'left', width:'40px'}}>250</div>
                 </div>
               </div>
-            </div>
 
-            <div className="card" style={{marginBottom: '40px'}}>
-              <div className="metric-header">Category Tag Count <span>📈</span></div>
-              <div className="vertical-bar-chart">
-                <div className="y-axis">
-                  <span>1,000</span>
-                  <span>800</span>
-                  <span>600</span>
-                  <span>400</span>
-                  <span>200</span>
-                  <span>0</span>
+              <div className="card">
+                <div className="metric-header">Category Tag Count <span>📈</span></div>
+                <div className="vertical-bar-chart">
+                  <div className="y-axis">
+                    <span>1,000</span>
+                    <span>800</span>
+                    <span>600</span>
+                    <span>400</span>
+                    <span>200</span>
+                    <span>0</span>
+                  </div>
+                  <div className="v-bar-col"><div className="v-bar-fill" style={{height: '3%'}}></div><div className="v-bar-label">REPEAT PURCHASE</div></div>
+                  <div className="v-bar-col"><div className="v-bar-fill" style={{height: '10%'}}></div><div className="v-bar-label">DISCOVERY</div></div>
+                  <div className="v-bar-col"><div className="v-bar-fill" style={{height: '32%'}}></div><div className="v-bar-label">PRICING</div></div>
+                  <div className="v-bar-col"><div className="v-bar-fill" style={{height: '83%'}}></div><div className="v-bar-label">DELIVERY</div></div>
+                  <div className="v-bar-col"><div className="v-bar-fill" style={{height: '40%'}}></div><div className="v-bar-label">QUALITY</div></div>
+                  <div className="v-bar-col"><div className="v-bar-fill" style={{height: '68%'}}></div><div className="v-bar-label">TRUST</div></div>
+                  <div className="v-bar-col"><div className="v-bar-fill" style={{height: '5%'}}></div><div className="v-bar-label">VARIETY</div></div>
+                  <div className="v-bar-col"><div className="v-bar-fill" style={{height: '10%'}}></div><div className="v-bar-label">HABIT</div></div>
                 </div>
-                <div className="v-bar-col"><div className="v-bar-fill" style={{height: '3%'}}></div><div className="v-bar-label">REPEAT PURCHASE</div></div>
-                <div className="v-bar-col"><div className="v-bar-fill" style={{height: '10%'}}></div><div className="v-bar-label">DISCOVERY</div></div>
-                <div className="v-bar-col"><div className="v-bar-fill" style={{height: '32%'}}></div><div className="v-bar-label">PRICING</div></div>
-                <div className="v-bar-col"><div className="v-bar-fill" style={{height: '83%'}}></div><div className="v-bar-label">DELIVERY</div></div>
-                <div className="v-bar-col"><div className="v-bar-fill" style={{height: '40%'}}></div><div className="v-bar-label">QUALITY</div></div>
-                <div className="v-bar-col"><div className="v-bar-fill" style={{height: '68%'}}></div><div className="v-bar-label">TRUST</div></div>
-                <div className="v-bar-col"><div className="v-bar-fill" style={{height: '5%'}}></div><div className="v-bar-label">VARIETY</div></div>
-                <div className="v-bar-col"><div className="v-bar-fill" style={{height: '10%'}}></div><div className="v-bar-label">HABIT</div></div>
               </div>
             </div>
 
