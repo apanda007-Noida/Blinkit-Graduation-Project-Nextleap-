@@ -651,6 +651,7 @@ h1, h2, h3, h4, .outfit {
   align-items: center;
   width: 30px;
   height: 100%;
+  position: relative;
 }
 .v-bar-fill {
   width: 100%;
@@ -658,11 +659,14 @@ h1, h2, h3, h4, .outfit {
   border-radius: 4px 4px 0 0;
 }
 .v-bar-label {
+  position: absolute;
+  top: 100%;
+  left: 50%;
   font-size: 9px;
   color: var(--text-muted);
-  transform: rotate(-45deg);
+  transform: rotate(45deg);
   transform-origin: top left;
-  margin-top: 10px;
+  margin-top: 8px;
   white-space: nowrap;
   letter-spacing: 1px;
 }
