@@ -101,46 +101,68 @@ export default function Home() {
             {/* Metrics Grid */}
             <div className="metrics-grid">
               <div className="card">
-                <div className="metric-header">Sentiment Distribution</div>
+                <div className="metric-header">Sentiment Distribution <span>🎗️</span></div>
                 {/* Simulated CSS Doughnut Chart using Conic Gradient */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '140px' }}>
                   <div style={{
                     width: '120px', height: '120px', borderRadius: '50%',
-                    background: 'conic-gradient(#10b981 0% 45%, #ef4444 45% 82%, #3b82f6 82% 92%, #f59e0b 92% 100%)',
+                    background: 'conic-gradient(#10b981 0% 48%, #ef4444 48% 87%, #3b82f6 87% 100%)',
                     position: 'relative'
                   }}>
-                    <div style={{ position: 'absolute', top: '20px', left: '20px', right: '20px', bottom: '20px', background: 'var(--bg-card)', borderRadius: '50%' }}></div>
+                    <div style={{ position: 'absolute', top: '25px', left: '25px', right: '25px', bottom: '25px', background: 'var(--bg-card)', borderRadius: '50%' }}></div>
                   </div>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginTop: '20px', color: 'var(--text-muted)' }}>
-                  <span><span style={{color:'#10b981'}}>●</span> Positive (1219)</span>
-                  <span><span style={{color:'#ef4444'}}>●</span> Negative (1032)</span>
-                  <span><span style={{color:'#3b82f6'}}>●</span> Neutral (251)</span>
+                  <span><span style={{color:'#10b981'}}>●</span> Positive (1460)</span>
+                  <span><span style={{color:'#ef4444'}}>●</span> Negative (1150)</span>
+                  <span><span style={{color:'#3b82f6'}}>●</span> Neutral (390)</span>
                 </div>
               </div>
 
               <div className="card">
-                <div className="metric-header">Feedback Sources</div>
+                <div className="metric-header">Feedback Sources <span>👥</span></div>
                 <div className="bar-row">
                   <div className="bar-label">Google Play</div>
-                  <div className="bar-track"><div className="bar-fill" style={{width: '90%', background: '#f7d046'}}></div></div>
-                  <div className="bar-label" style={{textAlign:'left', width:'40px'}}>1757</div>
+                  <div className="bar-track"><div className="bar-fill" style={{width: '63%', background: '#f7d046'}}></div></div>
+                  <div className="bar-label" style={{textAlign:'left', width:'40px'}}>1900</div>
                 </div>
                 <div className="bar-row">
                   <div className="bar-label">App Store</div>
-                  <div className="bar-track"><div className="bar-fill" style={{width: '25%', background: '#3b82f6'}}></div></div>
-                  <div className="bar-label" style={{textAlign:'left', width:'40px'}}>380</div>
+                  <div className="bar-track"><div className="bar-fill" style={{width: '17%', background: '#3b82f6'}}></div></div>
+                  <div className="bar-label" style={{textAlign:'left', width:'40px'}}>500</div>
                 </div>
                 <div className="bar-row">
                   <div className="bar-label">Reddit</div>
-                  <div className="bar-track"><div className="bar-fill" style={{width: '18%', background: '#ef4444'}}></div></div>
-                  <div className="bar-label" style={{textAlign:'left', width:'40px'}}>244</div>
+                  <div className="bar-track"><div className="bar-fill" style={{width: '12%', background: '#ef4444'}}></div></div>
+                  <div className="bar-label" style={{textAlign:'left', width:'40px'}}>350</div>
                 </div>
                 <div className="bar-row">
                   <div className="bar-label">Twitter/X</div>
-                  <div className="bar-track"><div className="bar-fill" style={{width: '15%', background: '#10b981'}}></div></div>
-                  <div className="bar-label" style={{textAlign:'left', width:'40px'}}>220</div>
+                  <div className="bar-track"><div className="bar-fill" style={{width: '8%', background: '#10b981'}}></div></div>
+                  <div className="bar-label" style={{textAlign:'left', width:'40px'}}>250</div>
                 </div>
+              </div>
+            </div>
+
+            <div className="card" style={{marginBottom: '40px'}}>
+              <div className="metric-header">Category Tag Count <span>📈</span></div>
+              <div className="vertical-bar-chart">
+                <div className="y-axis">
+                  <span>1,000</span>
+                  <span>800</span>
+                  <span>600</span>
+                  <span>400</span>
+                  <span>200</span>
+                  <span>0</span>
+                </div>
+                <div className="v-bar-col"><div className="v-bar-fill" style={{height: '3%'}}></div><div className="v-bar-label">REPEAT PURCHASE</div></div>
+                <div className="v-bar-col"><div className="v-bar-fill" style={{height: '10%'}}></div><div className="v-bar-label">DISCOVERY</div></div>
+                <div className="v-bar-col"><div className="v-bar-fill" style={{height: '32%'}}></div><div className="v-bar-label">PRICING</div></div>
+                <div className="v-bar-col"><div className="v-bar-fill" style={{height: '83%'}}></div><div className="v-bar-label">DELIVERY</div></div>
+                <div className="v-bar-col"><div className="v-bar-fill" style={{height: '40%'}}></div><div className="v-bar-label">QUALITY</div></div>
+                <div className="v-bar-col"><div className="v-bar-fill" style={{height: '68%'}}></div><div className="v-bar-label">TRUST</div></div>
+                <div className="v-bar-col"><div className="v-bar-fill" style={{height: '5%'}}></div><div className="v-bar-label">VARIETY</div></div>
+                <div className="v-bar-col"><div className="v-bar-fill" style={{height: '10%'}}></div><div className="v-bar-label">HABIT</div></div>
               </div>
             </div>
 
@@ -245,12 +267,18 @@ export default function Home() {
                 <option>Delivery</option>
                 <option>Quality</option>
                 <option>Trust</option>
+                <option>Discovery</option>
+                <option>Pricing</option>
+                <option>Variety</option>
+                <option>Habit</option>
+                <option>Repeat Purchase</option>
               </select>
               <select className="filter-select">
                 <option>All Sources</option>
+                <option>Google Play</option>
                 <option>App Store</option>
-                <option>Play Store</option>
                 <option>Reddit</option>
+                <option>Twitter/X</option>
               </select>
               <select className="filter-select">
                 <option>Newest First</option>
