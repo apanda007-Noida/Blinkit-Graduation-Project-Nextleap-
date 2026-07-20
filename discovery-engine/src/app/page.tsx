@@ -14,11 +14,31 @@ const HYPOTHESES = [
   { q: "Q8", title: "What unmet needs emerge consistently across discussions?", insight: "A need for a clear, trustworthy interface for non-grocery items that mirrors the reliability of their grocery experience.", themes: [{ t: "Non-Grocery UI Separation", c: 8 }], quote: "Wish they'd show me things I actually need instead of random banners.", source: "APP STORE", id: "7" }
 ];
 
+const BASE_REVIEWS = [
+  { id: 1, source: 'APP STORE', author: 'Mudit.', content: 'Please confirm to customer , where you deliver product & give service like home door step.', tags: ['DELIVERY', 'ONBOARDING'], sentiment: 'NEUTRAL', rating: 5, date: '7/16/2026' },
+  { id: 2, source: 'APP STORE', author: 'Muthahar17', content: 'Hi blinkit team Previously I have been purchased one thing on the blinkit and I received the other item in that I have been shared the photos off the item through your app and they said like it is not refunded and I did not ask about the refund I just to replacement they but they are informing it is also not replaceable then what should I do with that then I just requested to call back from the executive but they are informing the same thing I don\'t know what should I do with that product the product still unusable how can we trust on that', tags: ['TRUST', 'QUALITY'], sentiment: 'NEGATIVE', rating: 1, date: '7/16/2026' },
+  { id: 3, source: 'APP STORE', author: 'Astitva Bhaduriya', content: 'Wow bro just order anything anytime', tags: ['CONVENIENCE'], sentiment: 'POSITIVE', rating: 5, date: '7/16/2026' },
+  { id: 4, source: 'GOOGLE PLAY', author: 'Rahul K.', content: 'Prices are way too high for basic electronics compared to Amazon.', tags: ['PRICING'], sentiment: 'NEGATIVE', rating: 2, date: '7/15/2026' },
+  { id: 5, source: 'TWITTER/X', author: 'Sneha_99', content: 'Literally saved me when I needed a charger at 11 PM. Delivery in 8 mins!', tags: ['DELIVERY', 'HABIT'], sentiment: 'POSITIVE', rating: 5, date: '7/15/2026' },
+  { id: 6, source: 'REDDIT', author: 'u/delhifoodie', content: 'Has anyone noticed the produce quality dropping lately? Tomatoes were completely squashed.', tags: ['QUALITY'], sentiment: 'NEGATIVE', rating: 2, date: '7/14/2026' },
+  { id: 7, source: 'GOOGLE PLAY', author: 'Vikram Singh', content: 'App is good but sometimes the search doesn\'t show what I want.', tags: ['DISCOVERY'], sentiment: 'NEUTRAL', rating: 3, date: '7/14/2026' },
+  { id: 8, source: 'APP STORE', author: 'Priya Sharma', content: 'I buy my daily milk and bread from here. Never disappointed.', tags: ['REPEAT PURCHASE', 'TRUST'], sentiment: 'POSITIVE', rating: 5, date: '7/13/2026' },
+  { id: 9, source: 'TWITTER/X', author: 'TechBro101', content: 'Why would I buy a ₹10,000 headphone on Blinkit without any return policy clearly stated?', tags: ['TRUST'], sentiment: 'NEGATIVE', rating: 1, date: '7/13/2026' },
+  { id: 10, source: 'GOOGLE PLAY', author: 'Amit Patel', content: 'Huge variety of snacks available now, loving the new categories.', tags: ['VARIETY'], sentiment: 'POSITIVE', rating: 4, date: '7/12/2026' }
+];
+
+const ALL_REVIEWS = Array.from({ length: 3000 }, (_, i) => {
+  const base = BASE_REVIEWS[i % BASE_REVIEWS.length];
+  return { ...base, id: i + 1 };
+});
+
 export default function Home() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [activeHyp, setActiveHyp] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, title: '', value: '', color: '' });
+  
+  const displayedReviews = ALL_REVIEWS.slice((currentPage - 1) * 10, currentPage * 10);
 
   const handleMouseMove = (e: React.MouseEvent, title: string, value: string, color: string) => {
     setTooltip({
@@ -320,56 +340,37 @@ export default function Home() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td style={{color: 'var(--text-muted)'}}>#1</td>
-                    <td><div className="source-badge">APP<br/>STORE</div></td>
-                    <td>
-                      <div className="feedback-author">Mudit.</div>
-                      <div className="feedback-content">Please confirm to customer , where you deliver product & give service like home door step.</div>
-                      <div className="feedback-tags">
-                        <span className="f-tag">DELIVERY</span>
-                        <span className="f-tag">ONBOARDING</span>
-                      </div>
-                    </td>
-                    <td style={{textAlign: 'center'}}><span className="sentiment-badge neutral">NEUTRAL</span></td>
-                    <td style={{textAlign: 'center'}}>
-                      <span className="rating-stars">★★★★★</span>
-                    </td>
-                    <td className="feedback-date" style={{textAlign: 'right'}}>7/16/2026</td>
-                  </tr>
-                  <tr>
-                    <td style={{color: 'var(--text-muted)'}}>#2</td>
-                    <td><div className="source-badge">APP<br/>STORE</div></td>
-                    <td>
-                      <div className="feedback-author">Muthahar17</div>
-                      <div className="feedback-content">Hi blinkit team Previously I have been purchased one thing on the blinkit and I received the other item in that I have been shared the photos off the item through your app and they said like it is not refunded and I did not ask about the refund I just to replacement they but they are informing it is also not replaceable then what should I do with that then I just requested to call back from the executive but they are informing the same thing I don't know what should I do with that product the product still unusable how can we trust on that</div>
-                      <div className="feedback-tags">
-                        <span className="f-tag">TRUST</span>
-                        <span className="f-tag">QUALITY</span>
-                      </div>
-                    </td>
-                    <td style={{textAlign: 'center'}}><span className="sentiment-badge negative">NEGATIVE</span></td>
-                    <td style={{textAlign: 'center'}}>
-                      <span className="rating-stars">★<span className="rating-empty">★★★★</span></span>
-                    </td>
-                    <td className="feedback-date" style={{textAlign: 'right'}}>7/16/2026</td>
-                  </tr>
-                  <tr>
-                    <td style={{color: 'var(--text-muted)'}}>#3</td>
-                    <td><div className="source-badge">APP<br/>STORE</div></td>
-                    <td>
-                      <div className="feedback-author">Astitva Bhaduriya</div>
-                      <div className="feedback-content">Wow bro just order anything anytime</div>
-                      <div className="feedback-tags">
-                        <span className="f-tag">CONVENIENCE</span>
-                      </div>
-                    </td>
-                    <td style={{textAlign: 'center'}}><span className="sentiment-badge positive">POSITIVE</span></td>
-                    <td style={{textAlign: 'center'}}>
-                      <span className="rating-stars">★★★★★</span>
-                    </td>
-                    <td className="feedback-date" style={{textAlign: 'right'}}>7/16/2026</td>
-                  </tr>
+                  {displayedReviews.map((rev) => (
+                    <tr key={rev.id}>
+                      <td style={{color: 'var(--text-muted)'}}>#{rev.id}</td>
+                      <td>
+                        <div className="source-badge">
+                          {rev.source.split(' ').map((word, i, arr) => (
+                            <span key={i}>
+                              {word}
+                              {i < arr.length - 1 && <br />}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="feedback-author">{rev.author}</div>
+                        <div className="feedback-content">{rev.content}</div>
+                        <div className="feedback-tags">
+                          {rev.tags.map((tag, i) => <span key={i} className="f-tag">{tag}</span>)}
+                        </div>
+                      </td>
+                      <td style={{textAlign: 'center'}}>
+                        <span className={`sentiment-badge ${rev.sentiment.toLowerCase()}`}>{rev.sentiment}</span>
+                      </td>
+                      <td style={{textAlign: 'center'}}>
+                        <span className="rating-stars">
+                          {'★'.repeat(rev.rating)}<span className="rating-empty">{'★'.repeat(5 - rev.rating)}</span>
+                        </span>
+                      </td>
+                      <td className="feedback-date" style={{textAlign: 'right'}}>{rev.date}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
               <div className="pagination-footer">
