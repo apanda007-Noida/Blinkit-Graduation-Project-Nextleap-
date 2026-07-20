@@ -17,6 +17,7 @@ const HYPOTHESES = [
 export default function Home() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [activeHyp, setActiveHyp] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Sandbox state
   const [sandboxText, setSandboxText] = useState("");
@@ -351,6 +352,13 @@ export default function Home() {
                   </tr>
                 </tbody>
               </table>
+              <div className="pagination-footer">
+                <div className="pagination-text">Showing {(currentPage - 1) * 10 + 1}-{Math.min(currentPage * 10, 3000)} of 3000 reviews</div>
+                <div className="pagination-controls">
+                  <button className="page-btn" onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}><span>&lt;</span> Prev</button>
+                  <button className="page-btn" onClick={() => setCurrentPage(Math.min(300, currentPage + 1))}>Next <span>&gt;</span></button>
+                </div>
+              </div>
             </div>
 
           </div>
