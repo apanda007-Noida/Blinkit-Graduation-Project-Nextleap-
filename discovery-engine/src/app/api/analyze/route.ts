@@ -86,7 +86,7 @@ CRITICAL INSTRUCTION: You MUST return ONLY a raw, valid JSON object and absolute
 }
 `;
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
     const result = await model.generateContent(userContent);
     let text = result.response.text();
