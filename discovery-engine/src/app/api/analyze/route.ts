@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 
 const RESEARCH_QUESTIONS = [
   "Why do users repeatedly buy from the same categories?",
@@ -56,64 +55,81 @@ PRODUCT REVIEWS:\n${productReviews || '(none provided)'}
 QUICK-COMMERCE DISCUSSIONS:\n${quickCommerce || '(none provided)'}
 `;
 
+    // The Gemini JSON Schema payload
+    const schemaPayload = {
+      type: "OBJECT",
+      properties: {
+        themes: {
+          type: "ARRAY",
+          items: {
+            type: "OBJECT",
+            properties: {
+              title: { type: "STRING" },
+              insight: { type: "STRING" },
+              confidence: { type: "STRING" },
+              paraphrased_example: { type: "STRING" },
+              related_questions: { type: "ARRAY", items: { type: "INTEGER" } },
+              segment: { type: "STRING" }
+            },
+            required: ["title", "insight", "confidence", "paraphrased_example", "related_questions", "segment"]
+          }
+        },
+        answers: {
+          type: "ARRAY",
+          items: {
+            type: "OBJECT",
+            properties: {
+              question: { type: "STRING" },
+              answer: { type: "STRING" }
+            },
+            required: ["question", "answer"]
+          }
+        },
+        validation_flags: {
+          type: "ARRAY",
+          items: { type: "STRING" }
+        }
+      },
+      required: ["themes", "answers", "validation_flags"]
+    };
+
+    // Use native fetch to completely bypass the SDK's hidden auto-retry blocking
     for (const modelName of fallbackModels) {
       try {
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({
-          model: modelName,
-          systemInstruction: systemInstruction,
-          generationConfig: {
-            responseMimeType: "application/json",
-            responseSchema: {
-              type: SchemaType.OBJECT,
-              properties: {
-                themes: {
-                  type: SchemaType.ARRAY,
-                  items: {
-                    type: SchemaType.OBJECT,
-                    properties: {
-                      title: { type: SchemaType.STRING },
-                      insight: { type: SchemaType.STRING },
-                      confidence: { type: SchemaType.STRING },
-                      paraphrased_example: { type: SchemaType.STRING },
-                      related_questions: { type: SchemaType.ARRAY, items: { type: SchemaType.INTEGER } },
-                      segment: { type: SchemaType.STRING }
-                    },
-                    required: ["title", "insight", "confidence", "paraphrased_example", "related_questions", "segment"]
-                  }
-                },
-                answers: {
-                  type: SchemaType.ARRAY,
-                  items: {
-                    type: SchemaType.OBJECT,
-                    properties: {
-                      question: { type: SchemaType.STRING },
-                      answer: { type: SchemaType.STRING }
-                    },
-                    required: ["question", "answer"]
-                  }
-                },
-                validation_flags: {
-                  type: SchemaType.ARRAY,
-                  items: { type: SchemaType.STRING }
-                }
-              },
-              required: ["themes", "answers", "validation_flags"]
-            }
-          }
-        });
-
-        const result = await model.generateContent(userContent);
-        const text = result.response.text();
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 45000); // 45s hard timeout per model
         
-        if (!text) throw new Error("No response generated.");
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: systemInstruction }] },
+            contents: [{ parts: [{ text: userContent }] }],
+            generationConfig: {
+              responseMimeType: "application/json",
+              responseSchema: schemaPayload
+            }
+          })
+        });
+        
+        clearTimeout(timeoutId);
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(`[${response.status}] ${data.error?.message || 'Unknown error'}`);
+        }
+        
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!text) throw new Error("No text response generated.");
         
         resultData = JSON.parse(text);
         break; // Success! Break out of the fallback loop.
       } catch (err: any) {
         console.error(`Model ${modelName} failed:`, err.message);
         lastError = err;
-        // Continue to the next model in the fallback list
+        // Continue to the next model in the fallback list instantly
       }
     }
 
