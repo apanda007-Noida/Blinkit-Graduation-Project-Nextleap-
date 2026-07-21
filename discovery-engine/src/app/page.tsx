@@ -235,7 +235,7 @@ export default function Home() {
           <div className="fade-in">
             <header className="dashboard-header">
               <div>
-                <h1 className="dashboard-title">Growth Insights Dashboard</h1>
+                <h1 className="dashboard-title">Category Growth Intelligence Dashboard</h1>
                 <div className="dashboard-sub">Analyzing multi-channel user feedback at scale to expand category adoption</div>
               </div>
               <div className="dataset-badge">
