@@ -33,9 +33,9 @@ export async function POST(req: Request) {
       quickCommerce 
     } = await req.json();
     
-    if (!process.env.GEMINI_API_KEY) {
-      return NextResponse.json({ error: "GEMINI_API_KEY is not configured." }, { status: 500 });
-    }
+    // if (!process.env.GEMINI_API_KEY) {
+    //   return NextResponse.json({ error: "GEMINI_API_KEY is not configured." }, { status: 500 });
+    // }
 
     if (!appStore && !playStore && !reddit && !communityForums && !socialMedia && !productReviews && !quickCommerce) {
       return NextResponse.json({ error: "No input provided." }, { status: 400 });

@@ -142,10 +142,9 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [sandboxResult, setSandboxResult] = useState<any>(null);
 
-  const handleExample = (text: string) => setSandboxText(text);
-
-  const runSandbox = async () => {
-    if (!sandboxText.trim()) return;
+  const runSandbox = async (overrideText?: string) => {
+    const textToRun = overrideText || sandboxText;
+    if (!textToRun.trim()) return;
     setLoading(true);
     setSandboxResult(null);
     try {
@@ -153,7 +152,7 @@ export default function Home() {
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quickCommerce: sandboxText }) // Injecting it as quick commerce feedback
+        body: JSON.stringify({ quickCommerce: textToRun }) // Injecting it as quick commerce feedback
       });
       const data = await res.json();
       setSandboxResult(data);
@@ -161,6 +160,11 @@ export default function Home() {
       console.error(e);
     }
     setLoading(false);
+  };
+
+  const handleExample = (text: string) => {
+    setSandboxText(text);
+    runSandbox(text);
   };
 
   return (
@@ -584,7 +588,7 @@ export default function Home() {
                 <button className="sugg-btn" onClick={() => handleExample("I usually buy groceries but I tried buying a fast charger yesterday. It was a fake brand and got extremely hot. I am never buying electronics from here again.")}>Example 2</button>
                 <button className="sugg-btn" onClick={() => handleExample("Great app for daily milk, but I wish you guys had more organic brands and maybe some pet food. The current selection is boring.")}>Example 3</button>
                 <div style={{flexGrow: 1}}></div>
-                <button className="btn-primary" onClick={runSandbox} disabled={loading} style={{ background: '#F7D046', color: '#000' }}>
+                <button className="btn-primary" onClick={() => runSandbox()} disabled={loading} style={{ background: '#F7D046', color: '#000' }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
                   {loading ? 'Processing Pipeline...' : 'Run Pipeline Analysis'}
                 </button>
@@ -669,7 +673,7 @@ export default function Home() {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F7D046" strokeWidth="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.92-10.44l5.66-5.66"/></svg>
                     Vercel Serverless Pipeline
                   </div>
-                  <button style={{ width: '100%', background: '#F7D046', color: '#000', padding: '12px', borderRadius: '4px', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <button onClick={() => { setSandboxText("Initiating automated processing for 50 batch reviews..."); runSandbox("Initiating automated processing for 50 batch reviews..."); }} style={{ width: '100%', background: '#F7D046', color: '#000', padding: '12px', borderRadius: '4px', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                     <span>▶</span> Initiate Automated Pipeline
                   </button>
                 </div>
