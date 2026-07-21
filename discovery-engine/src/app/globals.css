@@ -960,3 +960,281 @@ h1, h2, h3, h4, .outfit {
   align-items: center;
   gap: 8px;
 }
+
+/* LIVE PIPELINE CSS */
+.live-pipeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.auditing-badge {
+  border: 1px solid #F7D046;
+  color: #F7D046;
+  background: rgba(247, 208, 70, 0.05);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.pipeline-progress-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  margin-bottom: 30px;
+  position: relative;
+  overflow: hidden;
+}
+
+.pipeline-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: #10b981;
+  width: 75%; /* Hardcoded to represent reaching Stage 3 */
+  border-radius: 4px;
+}
+
+.pipeline-step-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.pipeline-step-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 16px;
+  position: relative;
+}
+
+.pipeline-step-card.completed {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.pipeline-step-card.active {
+  border: 1px dashed #F7D046;
+  background: rgba(247, 208, 70, 0.02);
+}
+
+.pipeline-step-card.dimmed {
+  opacity: 0.4;
+}
+
+.step-icon-corner {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+.step-title-text {
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pipeline-step-card.active .step-title-text {
+  color: #F7D046;
+}
+
+.step-desc-text {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* AUDIT WORKBENCH CSS */
+.audit-workbench-grid {
+  display: flex;
+  gap: 24px;
+}
+
+.audit-left-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.audit-metrics-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.audit-metric-row {
+  display: flex;
+  justify-content: space-between;
+  text-align: center;
+  margin-top: 24px;
+}
+
+.audit-metric-value {
+  font-size: 32px;
+  font-weight: bold;
+  color: #F7D046;
+}
+
+.audit-metric-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-top: 4px;
+  letter-spacing: 0.5px;
+}
+
+.audit-logs-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 24px;
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+}
+
+.audit-log-empty {
+  margin: auto;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.audit-right-panel {
+  flex: 1.5;
+  background: #0f131a; /* Darker background for contrast */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.review-quote-box {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-style: italic;
+  color: #e5e7eb;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.prediction-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.prediction-box {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.prediction-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.prediction-value {
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.audit-action-row {
+  display: flex;
+  gap: 16px;
+}
+
+.btn-agree {
+  flex: 1;
+  background: #10b981;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 14px;
+  font-weight: bold;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 0.2s;
+}
+
+.btn-agree:hover {
+  opacity: 0.9;
+}
+
+.btn-disagree {
+  flex: 1;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 14px;
+  font-weight: bold;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 0.2s;
+}
+
+.btn-disagree:hover {
+  opacity: 0.9;
+}
+
+.skip-audit-box {
+  background: rgba(247, 208, 70, 0.05);
+  border: 1px dashed rgba(247, 208, 70, 0.3);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 24px;
+}
+
+.skip-audit-text {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.btn-skip {
+  width: 100%;
+  background: #F7D046;
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  padding: 12px;
+  font-weight: bold;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 0.2s;
+}
+
+.btn-skip:hover {
+  opacity: 0.9;
+}

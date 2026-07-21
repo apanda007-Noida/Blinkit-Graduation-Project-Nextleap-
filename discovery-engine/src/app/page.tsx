@@ -142,6 +142,26 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [sandboxResult, setSandboxResult] = useState<any>(null);
 
+  // Live Pipeline State
+  const [livePipelineActive, setLivePipelineActive] = useState(false);
+  const [auditStats, setAuditStats] = useState({ audited: 0, agreed: 0 });
+  const [auditLogs, setAuditLogs] = useState<{id: number, action: string}[]>([]);
+
+  const handleAgreeWithAI = () => {
+    setAuditStats(prev => ({ audited: prev.audited + 1, agreed: prev.agreed + 1 }));
+    setAuditLogs(prev => [{ id: 1496 + prev.length, action: 'Agreed ✓' }, ...prev]);
+  };
+
+  const handleDisagree = () => {
+    setAuditStats(prev => ({ audited: prev.audited + 1, agreed: prev.agreed }));
+    setAuditLogs(prev => [{ id: 1496 + prev.length, action: 'Overridden ✕' }, ...prev]);
+  };
+
+  const handleSkipAudit = () => {
+    setLivePipelineActive(false);
+    setActiveTab('dashboard'); // Jump to dashboard to see results
+  };
+
   const runSandbox = async (overrideText?: string) => {
     const textToRun = overrideText || sandboxText;
     if (!textToRun.trim()) return;
@@ -487,7 +507,127 @@ export default function Home() {
               </div>
             </header>
 
-            {/* PIPELINE DATA FLOW (NEW) */}
+            {livePipelineActive ? (
+              <div className="fade-in">
+                <div className="live-pipeline-header">
+                  <div style={{ fontSize: '18px', fontWeight: 'bold' }}>&gt;_ Live Pipeline Execution Flow</div>
+                  <div className="auditing-badge">AUDITING</div>
+                </div>
+
+                <div className="pipeline-progress-bar">
+                  <div className="pipeline-progress-fill"></div>
+                </div>
+
+                <div className="pipeline-step-grid" style={{ marginBottom: '40px' }}>
+                  <div className="pipeline-step-card completed">
+                    <svg className="step-icon-corner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e5e7eb" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+                    <div className="step-title-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"/></svg> 1. Ingestion & Clean</div>
+                    <div className="step-desc-text">Scrapes multi-channel sources and cleans noisy text logic.</div>
+                  </div>
+                  <div className="pipeline-step-card completed">
+                    <svg className="step-icon-corner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e5e7eb" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+                    <div className="step-title-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> 2. Batch Classification</div>
+                    <div className="step-desc-text">Passes data via Gemini API to map taxonomy and sentiments.</div>
+                  </div>
+                  <div className="pipeline-step-card active">
+                    <div className="step-title-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F7D046" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> 3. Quality Audit (Optional)</div>
+                    <div className="step-desc-text">Human-in-the-loop validation. Can be skipped in production.</div>
+                  </div>
+                  <div className="pipeline-step-card dimmed">
+                    <div className="step-title-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> 4. Thematic Synthesis</div>
+                    <div className="step-desc-text">Dynamically answers business discovery questions with verified themes.</div>
+                  </div>
+                </div>
+
+                <div className="card" style={{ padding: '30px', background: '#0a0d14' }}>
+                  <div className="live-pipeline-header" style={{ marginBottom: '32px' }}>
+                    <div style={{ fontSize: '18px', fontWeight: 'bold' }}>Stage 3: Quality Review Checkpoint (Optimal Stop & Audit)</div>
+                    <div className="auditing-badge" style={{ color: '#F7D046', border: '1px solid #F7D046', background: 'transparent' }}>AUDIT STOP</div>
+                  </div>
+
+                  <div className="audit-workbench-grid">
+                    <div className="audit-left-panel">
+                      <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '8px' }}>Verification & Audit Workbench</div>
+                      <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                        Review the AI classifications below. Tap Agree or Override to check alignment. Product Managers use this to verify Hinglish/Hindi translation accuracy and classification precision.
+                      </p>
+
+                      <div className="audit-metrics-card">
+                        <div style={{ fontSize: '12px', fontWeight: 'bold' }}>Live Verification Metrics</div>
+                        <div className="audit-metric-row">
+                          <div>
+                            <div className="audit-metric-value">{auditStats.audited === 0 ? '100%' : Math.round((auditStats.agreed / auditStats.audited) * 100) + '%'}</div>
+                            <div className="audit-metric-label">AI-HUMAN AGREEMENT</div>
+                          </div>
+                          <div>
+                            <div className="audit-metric-value">{auditStats.audited} / 40</div>
+                            <div className="audit-metric-label">REVIEWS AUDITED</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="audit-logs-card">
+                        <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '16px' }}>Audit Logs</div>
+                        {auditLogs.length === 0 ? (
+                          <div className="audit-log-empty">No audits completed yet.</div>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto', maxHeight: '100px' }}>
+                            {auditLogs.map((log, i) => (
+                              <div key={i} style={{ fontSize: '12px', display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                <span style={{ color: 'var(--text-muted)' }}>ID: {log.id}</span>
+                                <span style={{ color: log.action.includes('Agreed') ? '#10b981' : '#ef4444' }}>{log.action}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="audit-right-panel">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                        <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#10b981', textTransform: 'uppercase', padding: '4px 8px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '4px' }}>PLAY STORE</span>
+                        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>ID: {1496 + auditStats.audited}</span>
+                      </div>
+
+                      <div className="review-quote-box">
+                        "why does your store always get closed when it's raining 😔 so disappointing"
+                      </div>
+
+                      <div className="prediction-grid">
+                        <div className="prediction-box">
+                          <div className="prediction-label">AI PREDICTED SENTIMENT</div>
+                          <div className="prediction-value">Negative</div>
+                        </div>
+                        <div className="prediction-box">
+                          <div className="prediction-label">AI PREDICTED TAGS</div>
+                          <div className="prediction-value">["delivery"]</div>
+                        </div>
+                      </div>
+
+                      <div className="audit-action-row">
+                        <button className="btn-agree" onClick={handleAgreeWithAI}>
+                          ✓ Agree with AI
+                        </button>
+                        <button className="btn-disagree" onClick={handleDisagree}>
+                          ✕ Disagree / Override
+                        </button>
+                      </div>
+
+                      <div className="skip-audit-box">
+                        <div className="skip-audit-text">
+                          <strong style={{color: '#F7D046'}}>💡 Skip Option:</strong> You can click below to skip this manual checkpoint at any time. This stage is shown to demonstrate the human-in-the-loop verification pipeline used during offline data preparation.
+                        </div>
+                        <button className="btn-skip" onClick={handleSkipAudit}>
+                          → Skip Audit & Continue to Synthesis
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* PIPELINE DATA FLOW (NEW) */}
             <div className="card" style={{ marginBottom: '30px', padding: '30px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -673,7 +813,7 @@ export default function Home() {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F7D046" strokeWidth="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.92-10.44l5.66-5.66"/></svg>
                     Vercel Serverless Pipeline
                   </div>
-                  <button onClick={() => { setSandboxText("Initiating automated processing for 50 batch reviews..."); runSandbox("Initiating automated processing for 50 batch reviews..."); }} style={{ width: '100%', background: '#F7D046', color: '#000', padding: '12px', borderRadius: '4px', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <button onClick={() => setLivePipelineActive(true)} style={{ width: '100%', background: '#F7D046', color: '#000', padding: '12px', borderRadius: '4px', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                     <span>▶</span> Initiate Automated Pipeline
                   </button>
                 </div>
@@ -686,6 +826,8 @@ export default function Home() {
                 </div>
               </div>
             </div>
+            </>
+            )}
 
           </div>
         )}
