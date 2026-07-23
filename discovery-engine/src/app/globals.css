@@ -1238,3 +1238,69 @@ h1, h2, h3, h4, .outfit {
 .btn-skip:hover {
   opacity: 0.9;
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .app-layout {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .sidebar-header {
+    justify-content: space-between;
+  }
+  .nav-menu {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 8px;
+    padding: 12px;
+  }
+  .nav-item {
+    margin-bottom: 0;
+    white-space: nowrap;
+  }
+  .sidebar-footer {
+    display: none;
+  }
+  .main-content {
+    overflow-y: auto;
+    padding: 16px;
+  }
+  .metrics-grid,
+  .hyp-grid,
+  .segment-grid,
+  .pipeline-step-grid,
+  .prediction-grid,
+  .tech-grid {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-header,
+  .live-pipeline-header,
+  .audit-action-row,
+  .audit-workbench-grid,
+  .feedback-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .feedback-controls {
+    align-items: stretch;
+  }
+  .feedback-controls input,
+  .feedback-controls select {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+  .feedback-table-container {
+    overflow-x: auto;
+  }
+  .card > div[style*="display: flex"] {
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+}
